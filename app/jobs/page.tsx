@@ -1,0 +1,143 @@
+import Link from 'next/link';
+import { Briefcase, MapPin, Clock, DollarSign, ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/lib/supabase';
+import type { JobPosting } from '@/lib/types';
+
+export const dynamic = 'force-dynamic';
+
+export const metadata = {
+  title: 'Job Openings',
+  description:
+    'Browse open job positions and apply online. Log in to submit your application.',
+};
+
+async function getJobs() {
+  const { data } = await supabase
+    .from('job_postings')
+    .select('*')
+    .eq('status', 'PUBLISHED')
+    .order('created_at', { ascending: false });
+  return (data as JobPosting[]) ?? [];
+}
+
+const EXPERIENCE_LABELS: Record<string, string> = {
+  entry: 'Entry Level',
+  junior: 'Junior',
+  mid: 'Mid Level',
+  senior: 'Senior',
+  lead: 'Lead',
+  any: 'Any Level',
+};
+
+export default async function JobsPage() {
+  const jobs = await getJobs();
+
+  return (
+    <>
+      <section className="border-b border-border/60 bg-secondary/30">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+              Job Openings
+            </h1>
+            <p className="mt-6 text-lg text-muted-foreground">
+              Browse our open positions. Sign in to apply — it takes less than
+              a minute.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {jobs.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center p-12 text-center">
+                <Briefcase className="h-12 w-12 text-muted-foreground" />
+                <p className="mt-4 font-medium">No open positions right now.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Check back soon for new opportunities.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2">
+              {jobs.map((job) => (
+                <Link key={job.id} href={`/jobs/${job.slug}`} className="group">
+                  <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <Badge variant="secondary" className="mb-2">
+                            {job.category}
+                          </Badge>
+                          <h3 className="font-semibold leading-tight group-hover:text-primary">
+                            {job.title}
+                          </h3>
+                        </div>
+                        <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary whitespace-nowrap">
+                          {EXPERIENCE_LABELS[job.experience_level] || job.experience_level}
+                        </span>
+                      </div>
+
+                      <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
+                        {job.description}
+                      </p>
+
+                      <div className="mt-4 flex flex-wrap gap-1.5">
+                        {job.technologies.slice(0, 5).map((tech) => (
+                          <span
+                            key={tech}
+                            className="rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                        {job.location && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3.5 w-3.5" />
+                            {job.location}
+                          </span>
+                        )}
+                        {job.remote_ok && (
+                          <span className="flex items-center gap-1 text-success">
+                            <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                            Remote OK
+                          </span>
+                        )}
+                        {job.budget_min_cents && (
+                          <span className="flex items-center gap-1">
+                            <DollarSign className="h-3.5 w-3.5" />
+                            {job.currency} {(job.budget_min_cents / 100).toLocaleString()}
+                            {job.budget_max_cents && ` – ${(job.budget_max_cents / 100).toLocaleString()}`}
+                          </span>
+                        )}
+                        {job.deadline && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5" />
+                            Deadline: {new Date(job.deadline).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="mt-4 flex items-center gap-1 text-sm font-medium text-primary">
+                        View & Apply
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </>
+  );
+}
