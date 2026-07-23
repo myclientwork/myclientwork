@@ -11,7 +11,6 @@ import {
   UserCog,
   Shield,
   LogOut,
-  PlusCircle,
   FileCheck,
   Package,
   ShoppingCart,
@@ -32,7 +31,6 @@ const links = [
   { href: '/admin/projects', label: 'Projects', icon: FolderKanban },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
-  { href: '/post-a-job', label: 'Post a Job', icon: PlusCircle },
 ];
 
 export function AdminNav() {

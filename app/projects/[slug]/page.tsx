@@ -261,7 +261,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                     size="sm"
                     className="mt-4"
                   >
-                    <Link href={`/post-a-job?source=${project.slug}`}>
+                    <Link href={`/contact?subject=Project%20Inquiry%3A%20${project.slug}`}>
                       Request a similar project
                       <ArrowRight className="ml-2 h-3.5 w-3.5" />
                     </Link>

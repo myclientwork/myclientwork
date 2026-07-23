@@ -114,11 +114,8 @@ export default function DashboardOverviewPage() {
               <FileText className="h-10 w-10 text-muted-foreground" />
               <p className="mt-3 font-medium">No jobs yet</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Post your first job request to get started.
+                Job requests submitted via the contact form will appear here.
               </p>
-              <Button asChild className="mt-4">
-                <Link href="/post-a-job">Post a Job</Link>
-              </Button>
             </CardContent>
           </Card>
         ) : (
@@ -149,8 +146,8 @@ export default function DashboardOverviewPage() {
           <CardTitle className="text-base">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
-          <Button asChild size="sm">
-            <Link href="/post-a-job">Post a Job</Link>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/products">Browse Products</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/projects">Browse Projects</Link>

@@ -14,14 +14,19 @@ import { useAuth } from '@/lib/auth-context';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    if (user) router.push('/dashboard');
-  }, [user, router]);
+    if (authLoading) return;
+    if (user && profile) {
+      router.push(profile.role === 'admin' ? '/admin' : '/dashboard');
+    } else if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, profile, authLoading, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,7 +39,12 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast.success('Welcome back!');
-      router.push('/dashboard');
+      const { data: profileData } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', (await supabase.auth.getUser()).data.user?.id || '')
+        .maybeSingle();
+      router.push(profileData?.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to sign in.');
     } finally {

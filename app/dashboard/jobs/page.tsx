@@ -55,9 +55,7 @@ export default function MyJobsPage() {
             Track your submitted job requests and their status.
           </p>
         </div>
-        <Button asChild size="sm">
-          <Link href="/post-a-job">Post a Job</Link>
-        </Button>
+
       </div>
 
       <div className="relative max-w-sm">
@@ -82,9 +80,9 @@ export default function MyJobsPage() {
               {search ? 'No jobs match your search.' : 'No jobs submitted yet.'}
             </p>
             {!search && (
-              <Button asChild className="mt-4">
-                <Link href="/post-a-job">Post your first job</Link>
-              </Button>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Job requests submitted via the contact form will appear here.
+              </p>
             )}
           </CardContent>
         </Card>

@@ -303,7 +303,7 @@ export default async function MemberProfilePage({ params }: Props) {
                     size="sm"
                     className="mt-4"
                   >
-                    <Link href="/post-a-job">Post a Job</Link>
+                    <Link href="/contact">Get Started</Link>
                   </Button>
                 </CardContent>
               </Card>

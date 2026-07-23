@@ -70,11 +70,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        setLoading(true);
         (async () => {
           await loadProfile(session.user.id);
+          setLoading(false);
         })();
       } else {
         setProfile(null);
+        setLoading(false);
       }
     });
 
