@@ -47,10 +47,10 @@ export function AdminNav() {
   }
 
   return (
-    <nav className="flex flex-col gap-1">
-      <div className="mb-2 flex items-center gap-2 px-3 py-2">
+    <nav className="flex flex-col gap-1 p-3">
+      <div className="mb-3 flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2.5">
         <Shield className="h-5 w-5 text-primary" />
-        <span className="font-bold">Admin Panel</span>
+        <span className="font-bold text-primary">Admin Panel</span>
       </div>
       {links.map((link) => {
         const active = link.href === '/admin' ? pathname === '/admin' : pathname.startsWith(link.href);
@@ -61,7 +61,7 @@ export function AdminNav() {
             className={cn(
               'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
               active
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-primary text-primary-foreground shadow-sm'
                 : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
             )}
           >

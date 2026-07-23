@@ -59,13 +59,20 @@ export default function DashboardOverviewPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Welcome, {profile?.full_name || 'User'}!
-        </h1>
-        <p className="mt-1 text-muted-foreground">
-          Here&apos;s an overview of your account activity.
-        </p>
+      <div className="rounded-xl border border-border/60 bg-gradient-to-br from-secondary/50 to-transparent p-6">
+        <div className="flex items-center gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground text-xl font-bold shadow-md">
+            {(profile?.full_name || user?.email || 'U').charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Welcome, {profile?.full_name || 'User'}!
+            </h1>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Here&apos;s an overview of your account activity.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

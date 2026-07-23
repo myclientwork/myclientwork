@@ -14,6 +14,7 @@ import {
   FileCheck,
   Package,
   ShoppingCart,
+  Shield,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -84,11 +85,18 @@ export default function AdminOverviewPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Admin Overview</h1>
-        <p className="mt-1 text-muted-foreground">
-          Monitor platform activity, manage jobs, users, and content.
-        </p>
+      <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md">
+            <Shield className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Admin Overview</h1>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Monitor platform activity, manage jobs, users, and content.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Stats cards */}

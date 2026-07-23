@@ -18,7 +18,7 @@ export default function DashboardLayout({
           <aside className="lg:sticky lg:top-20 lg:h-fit">
             <DashboardNav />
           </aside>
-          <div>{children}</div>
+          <div className="min-w-0">{children}</div>
         </div>
       </div>
     </AuthGuard>
