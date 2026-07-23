@@ -23,8 +23,6 @@ export default function LoginPage() {
     if (authLoading) return;
     if (user && profile) {
       router.push(profile.role === 'admin' ? '/admin' : '/dashboard');
-    } else if (user) {
-      router.push('/dashboard');
     }
   }, [user, profile, authLoading, router]);
 
@@ -36,13 +34,18 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast.success('Welcome back!');
+      const userId = data.user?.id;
+      if (!userId) {
+        router.push('/dashboard');
+        return;
+      }
       const { data: profileData } = await supabase
         .from('user_profiles')
         .select('role')
-        .eq('id', (await supabase.auth.getUser()).data.user?.id || '')
+        .eq('id', userId)
         .maybeSingle();
       router.push(profileData?.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
