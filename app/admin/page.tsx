@@ -12,6 +12,8 @@ import {
   ArrowRight,
   PlusCircle,
   FileCheck,
+  Package,
+  ShoppingCart,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +30,9 @@ export default function AdminOverviewPage() {
     applications: 0,
     pendingJobs: 0,
     completedJobs: 0,
+    products: 0,
+    orders: 0,
+    revenue: 0,
   });
   const [recentJobs, setRecentJobs] = useState<JobRequest[]>([]);
   const [recentMessages, setRecentMessages] = useState<ContactMessage[]>([]);
@@ -35,16 +40,19 @@ export default function AdminOverviewPage() {
 
   useEffect(() => {
     async function load() {
-      const [jobsRes, usersRes, messagesRes, projectsRes, appsRes] = await Promise.all([
+      const [jobsRes, usersRes, messagesRes, projectsRes, appsRes, productsRes, ordersRes] = await Promise.all([
         supabase.from('job_requests').select('*').order('created_at', { ascending: false }).limit(5),
         supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false }).limit(5),
         supabase.from('projects').select('*', { count: 'exact', head: true }),
         supabase.from('job_applications').select('*', { count: 'exact', head: true }),
+        supabase.from('products').select('*', { count: 'exact', head: true }),
+        supabase.from('orders').select('amount_cents, status'),
       ]);
 
       const jobs = (jobsRes.data as JobRequest[]) ?? [];
       const messages = (messagesRes.data as ContactMessage[]) ?? [];
+      const allOrders = (ordersRes.data as { amount_cents: number; status: string }[]) ?? [];
 
       setStats({
         jobs: jobsRes.data?.length || 0,
@@ -54,6 +62,9 @@ export default function AdminOverviewPage() {
         applications: appsRes.count || 0,
         pendingJobs: jobs.filter((j) => !['COMPLETED', 'CANCELLED', 'REJECTED'].includes(j.status)).length,
         completedJobs: jobs.filter((j) => j.status === 'COMPLETED').length,
+        products: productsRes.count || 0,
+        orders: allOrders.length,
+        revenue: allOrders.filter((o) => o.status === 'PAID').reduce((sum, o) => sum + o.amount_cents, 0),
       });
       setRecentJobs(jobs);
       setRecentMessages(messages);
@@ -67,6 +78,8 @@ export default function AdminOverviewPage() {
     { label: 'Applications', value: stats.applications, icon: FileCheck, color: 'text-success', href: '/admin/applications' },
     { label: 'Registered Users', value: stats.users, icon: Users, color: 'text-accent', href: '/admin/users' },
     { label: 'Messages', value: stats.messages, icon: Mail, color: 'text-warning', href: '/admin/messages' },
+    { label: 'Products', value: stats.products, icon: Package, color: 'text-primary', href: '/admin/products' },
+    { label: 'Orders', value: stats.orders, icon: ShoppingCart, color: 'text-success', href: '/admin/orders' },
   ];
 
   return (
@@ -98,7 +111,7 @@ export default function AdminOverviewPage() {
       </div>
 
       {/* Additional stats */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-4 p-5">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -121,19 +134,17 @@ export default function AdminOverviewPage() {
             </div>
           </CardContent>
         </Card>
-        <Link href="/admin/projects">
-          <Card className="transition-all hover:shadow-md">
-            <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary text-accent">
-                <FolderKanban className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.projects}</p>
-                <p className="text-sm text-muted-foreground">Projects</p>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+        <Card>
+          <CardContent className="flex items-center gap-4 p-5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10 text-accent">
+              <TrendingUp className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">${(stats.revenue / 100).toFixed(2)}</p>
+              <p className="text-sm text-muted-foreground">Revenue (Paid)</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Quick actions */}
@@ -147,6 +158,9 @@ export default function AdminOverviewPage() {
               <PlusCircle className="mr-2 h-4 w-4" />
               Post a Job
             </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/products">Add Product</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/admin/team">Add Team Member</Link>

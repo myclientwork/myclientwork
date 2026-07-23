@@ -13,6 +13,8 @@ import {
   LogOut,
   PlusCircle,
   FileCheck,
+  Package,
+  ShoppingCart,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -28,6 +30,8 @@ const links = [
   { href: '/admin/messages', label: 'Messages', icon: Mail },
   { href: '/admin/team', label: 'Team', icon: UserCog },
   { href: '/admin/projects', label: 'Projects', icon: FolderKanban },
+  { href: '/admin/products', label: 'Products', icon: Package },
+  { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/post-a-job', label: 'Post a Job', icon: PlusCircle },
 ];
 

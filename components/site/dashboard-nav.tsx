@@ -9,6 +9,7 @@ import {
   Shield,
   LogOut,
   FileCheck,
+  Package,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -25,6 +26,7 @@ export function DashboardNav() {
     { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { href: '/dashboard/applications', label: 'My Applications', icon: FileCheck },
     { href: '/dashboard/jobs', label: 'My Job Requests', icon: Briefcase },
+    { href: '/dashboard/orders', label: 'My Orders', icon: Package },
     { href: '/dashboard/profile', label: 'Profile', icon: User },
   ];
 

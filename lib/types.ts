@@ -144,3 +144,39 @@ export type JobApplicationWithJob = JobApplication & {
 export type JobApplicationWithUser = JobApplication & {
   user_profiles: Pick<UserProfile, 'id' | 'email' | 'full_name' | 'country' | 'phone'>;
 };
+
+export type Product = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  features: string[];
+  price_cents: number;
+  currency: string;
+  image_url: string | null;
+  download_url: string | null;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Order = {
+  id: string;
+  user_id: string;
+  product_id: string;
+  amount_cents: number;
+  currency: string;
+  status: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+  stripe_payment_intent_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type OrderWithProduct = Order & {
+  products: Pick<Product, 'id' | 'name' | 'slug' | 'image_url'>;
+};
+
+export type OrderWithUser = Order & {
+  user_profiles: Pick<UserProfile, 'id' | 'email' | 'full_name'>;
+};

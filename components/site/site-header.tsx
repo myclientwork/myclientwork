@@ -34,6 +34,7 @@ const navLinks = [
   { href: '/projects', label: 'Projects' },
   { href: '/jobs', label: 'Jobs' },
   { href: '/members', label: 'Team' },
+  { href: '/products', label: 'Products' },
   { href: '/contact', label: 'Contact' },
 ];
 
