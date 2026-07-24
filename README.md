@@ -1,20 +1,21 @@
-# MyClientWork
+# MyClientWork — Client Project Requirement Portal
 
-> Production-grade web application platform for digital services, team showcase, client job requests, product store, and administrative management.
+> Production-grade web application platform for digital software agencies. Allows clients to post custom web and mobile app development requirements, track project progress, explore portfolio projects, and manage agency operations.
 
 Built with Next.js 13 (App Router), TypeScript, Tailwind CSS, shadcn/ui, and Supabase.
+
+[![GitHub Repository](https://img.shields.io/badge/GitHub-myclientwork-blue?logo=github)](https://github.com/myclientwork/myclientwork)
 
 ---
 
 ## Features
 
-- **Public Showcase**: Hero landing page, team directory, featured client projects, and service offerings.
-- **Client Portal / Job Requests**: Interactive multi-step wizard for clients to submit detailed project requirements, budget, and timeline.
-- **User Dashboard**: Client area to track job requests, application status, digital product orders, and manage profile settings.
-- **Admin Control Panel**: Comprehensive dashboard to manage team members, portfolio projects, incoming job requests, job postings, candidate applications, contact messages, products, and sales orders.
-- **Role-Based Access Control (RBAC)**: Secure authentication powered by Supabase with role-based route protection (`admin` vs `user`).
-- **Storage Integration**: File upload capabilities for team member avatars and digital assets via Supabase Storage buckets.
-- **Responsive & Modern Design**: Clean design system built with Tailwind CSS, Lucide icons, glassmorphism UI elements, and custom CSS design tokens.
+- **Client Project Requirement Wizard**: 5-step interactive form for clients to post custom software requirements (web apps, mobile apps, DevOps, API design) including budget ranges, timelines, feature specs, and contact details.
+- **Client Dashboard**: Dedicated portal for clients to track the development status of their submitted requirements (`SUBMITTED` → `QUALIFIED` → `IN_PROGRESS` → `COMPLETED`) and manage their profile.
+- **Portfolio & Services Showcase**: Showcase completed client projects, technical capabilities, and custom software development services.
+- **Admin Control Panel**: Comprehensive dashboard for agency administrators to review submitted client requirements, update status, manage portfolio projects, oversee users, and respond to inquiries.
+- **Role-Based Access Control (RBAC)**: Row-Level Security (RLS) policies powered by Supabase with role-based route protection (`admin` vs `user`).
+- **Responsive & Premium UI**: Clean design system built with Tailwind CSS, Lucide icons, glassmorphism elements, and responsive mobile-first navigation.
 
 ---
 
@@ -47,8 +48,8 @@ Built with Next.js 13 (App Router), TypeScript, Tailwind CSS, shadcn/ui, and Sup
 
 1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
-   cd myclientwork-1
+   git clone https://github.com/myclientwork/myclientwork.git
+   cd myclientwork
    ```
 
 2. **Install dependencies**:
@@ -78,18 +79,15 @@ Built with Next.js 13 (App Router), TypeScript, Tailwind CSS, shadcn/ui, and Sup
 ## Project Structure
 
 ```text
-myclientwork-1/
+myclientwork/
 ├── app/                  # Next.js App Router pages and layouts
 │   ├── about/            # About page
 │   ├── admin/            # Administrative management dashboard & routes
 │   ├── auth/             # Authentication pages (login, register, callback)
 │   ├── contact/          # Contact page
 │   ├── dashboard/        # Client user dashboard & routes
-│   ├── jobs/             # Public job postings list & details
-│   ├── members/          # Team member directory & profiles
-│   ├── post-a-job/       # Client job request submission form
+│   ├── post-a-job/       # Client project requirement submission wizard
 │   ├── privacy/          # Privacy policy page
-│   ├── products/         # Digital product marketplace
 │   ├── projects/         # Portfolio showcase & project details
 │   ├── services/         # Services offered page
 │   ├── terms/            # Terms of service page
@@ -124,7 +122,7 @@ Database schemas and migrations are located in the `supabase/migrations/` direct
 7. `20260723041900_fix_rls_circular_dependency.sql` — RLS optimization.
 8. `20260724150000_create_storage_buckets.sql` — Storage bucket creation for member avatars.
 
-To apply these to your Supabase project, execute the SQL files in order via the Supabase Dashboard SQL Editor or using the Supabase CLI:
+To apply these to your Supabase project:
 
 ```bash
 supabase db push
@@ -135,7 +133,7 @@ supabase db push
 ## Scripts
 
 - `npm run dev` — Starts Next.js development server
-- `npm run build` — Compiles and builds production assets
+- `npm run build` — Compiles and builds production bundle
 - `npm run start` — Runs the compiled production server
 - `npm run lint` — Runs ESLint checks
 - `npm run typecheck` — Runs TypeScript type check (`tsc --noEmit`)
