@@ -14,6 +14,7 @@ import {
   FileCheck,
   Package,
   ShoppingCart,
+  PenSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -23,8 +24,9 @@ import { Button } from '@/components/ui/button';
 
 const links = [
   { href: '/admin', label: 'Overview', icon: LayoutDashboard },
+  { href: '/admin/jobs', label: 'Client Requirements', icon: Briefcase },
+  { href: '/admin/job-postings', label: 'Requirement Listings', icon: PenSquare },
   { href: '/admin/applications', label: 'Applications', icon: FileCheck },
-  { href: '/admin/jobs', label: 'Job Requests', icon: Briefcase },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/messages', label: 'Messages', icon: Mail },
   { href: '/admin/team', label: 'Team', icon: UserCog },

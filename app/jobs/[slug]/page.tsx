@@ -25,6 +25,8 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import type { JobPosting } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+
 const EXPERIENCE_LABELS: Record<string, string> = {
   entry: 'Entry Level',
   junior: 'Junior',

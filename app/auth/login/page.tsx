@@ -42,12 +42,22 @@ export default function LoginPage() {
         router.push('/dashboard');
         return;
       }
-      const { data: profileData } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('id', userId)
-        .maybeSingle();
-      router.push(profileData?.role === 'admin' ? '/admin' : '/dashboard');
+      // Retry up to 3 times to handle RLS / replication lag
+      let role: string | null = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const { data: profileData } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', userId)
+          .maybeSingle();
+        if (profileData?.role) {
+          role = profileData.role;
+          break;
+        }
+        // Wait 500ms before retry
+        await new Promise((r) => setTimeout(r, 500));
+      }
+      router.push(role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to sign in.');
     } finally {

@@ -75,7 +75,7 @@ export default function AdminOverviewPage() {
   }, []);
 
   const cards = [
-    { label: 'Job Requests', value: stats.jobs, icon: Briefcase, color: 'text-primary', href: '/admin/jobs' },
+    { label: 'Client Requirements', value: stats.jobs, icon: Briefcase, color: 'text-primary', href: '/admin/jobs' },
     { label: 'Applications', value: stats.applications, icon: FileCheck, color: 'text-success', href: '/admin/applications' },
     { label: 'Registered Users', value: stats.users, icon: Users, color: 'text-accent', href: '/admin/users' },
     { label: 'Messages', value: stats.messages, icon: Mail, color: 'text-warning', href: '/admin/messages' },
@@ -164,7 +164,7 @@ export default function AdminOverviewPage() {
           <Button asChild size="sm">
             <Link href="/post-a-job">
               <PlusCircle className="mr-2 h-4 w-4" />
-              Post a Job
+              Post Requirement
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
@@ -182,7 +182,7 @@ export default function AdminOverviewPage() {
       {/* Recent jobs */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Recent Job Requests</h2>
+          <h2 className="text-lg font-semibold">Recent Client Requirements</h2>
           <Link href="/admin/jobs" className="text-sm text-primary hover:underline flex items-center gap-1">
             View all <ArrowRight className="h-3.5 w-3.5" />
           </Link>

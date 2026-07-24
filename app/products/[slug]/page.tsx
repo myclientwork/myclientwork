@@ -12,6 +12,8 @@ import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
 import type { Product, Order } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+
 export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const { user } = useAuth();

@@ -8,8 +8,17 @@ export default function AuthCallbackPage() {
   const router = useRouter();
 
   useEffect(() => {
-    supabase.auth.getSession().then(() => {
-      router.push('/dashboard');
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user?.id) {
+        router.push('/auth/login');
+        return;
+      }
+      const { data: profileData } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      router.push(profileData?.role === 'admin' ? '/admin' : '/dashboard');
     });
   }, [router]);
 

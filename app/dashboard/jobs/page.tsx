@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Briefcase, Search } from 'lucide-react';
+import { Briefcase, Search, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -50,12 +50,17 @@ export default function MyJobsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">My Jobs</h1>
+          <h1 className="text-2xl font-bold tracking-tight">My Requirements</h1>
           <p className="mt-1 text-muted-foreground">
-            Track your submitted job requests and their status.
+            Track your submitted project requirements and their development status.
           </p>
         </div>
-
+        <Button asChild>
+          <Link href="/post-a-job">
+            <Plus className="mr-2 h-4 w-4" />
+            Post Requirement
+          </Link>
+        </Button>
       </div>
 
       <div className="relative max-w-sm">

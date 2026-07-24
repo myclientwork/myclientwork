@@ -97,8 +97,8 @@ export default async function HomePage() {
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row animate-fade-up" style={{ animationDelay: '0.2s' }}>
               <Button asChild size="lg">
-                <Link href="/jobs">
-                  Browse Jobs
+                <Link href="/post-a-job">
+                  Post Requirement
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -288,16 +288,15 @@ export default async function HomePage() {
       <section className="border-t border-border/60 bg-primary py-16">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl">
-            Looking for opportunities?
+            Ready to start your project?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-primary-foreground/80">
-            Browse our open job positions and apply online. Sign in to submit
-            your application.
+            Submit your web or mobile app development requirements and our team will review and respond with a project roadmap.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg" variant="secondary">
-              <Link href="/jobs">
-                Browse Jobs
+              <Link href="/post-a-job">
+                Post Requirement
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>

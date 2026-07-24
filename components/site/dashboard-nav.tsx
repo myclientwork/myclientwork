@@ -24,8 +24,8 @@ export function DashboardNav() {
 
   const links = [
     { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-    { href: '/dashboard/applications', label: 'My Applications', icon: FileCheck },
-    { href: '/dashboard/jobs', label: 'My Job Requests', icon: Briefcase },
+    { href: '/post-a-job', label: 'Post Requirement', icon: FileCheck },
+    { href: '/dashboard/jobs', label: 'My Requirements', icon: Briefcase },
     { href: '/dashboard/orders', label: 'My Orders', icon: Package },
     { href: '/dashboard/profile', label: 'Profile', icon: User },
   ];

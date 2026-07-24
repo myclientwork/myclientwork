@@ -146,6 +146,11 @@ export default function DashboardOverviewPage() {
           <CardTitle className="text-base">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
+          <Button asChild size="sm">
+            <Link href="/post-a-job">
+              Post Requirement
+            </Link>
+          </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/products">Browse Products</Link>
           </Button>

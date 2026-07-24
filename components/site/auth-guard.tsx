@@ -6,14 +6,20 @@ import { useAuth } from '@/lib/auth-context';
 import { Loader2 } from 'lucide-react';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (loading) return;
+    if (!user) {
       router.push('/auth/login');
+      return;
     }
-  }, [user, loading, router]);
+    // Admin users should not access the user dashboard — redirect to /admin
+    if (profile?.role === 'admin') {
+      router.push('/admin');
+    }
+  }, [user, profile, loading, router]);
 
   if (loading) {
     return (
@@ -23,7 +29,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user) return null;
+  if (!user || profile?.role === 'admin') return null;
 
   return <>{children}</>;
 }

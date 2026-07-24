@@ -196,7 +196,7 @@ export function JobForm() {
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10 text-success animate-scale-in">
           <CheckCircle2 className="h-8 w-8" />
         </div>
-        <h2 className="mt-6 text-2xl font-bold">Job request submitted!</h2>
+        <h2 className="mt-6 text-2xl font-bold">Project requirement submitted!</h2>
         <p className="mt-3 text-muted-foreground">
           Thank you, {form.name.split(' ')[0]}. We&apos;ve received your project
           requirements for &ldquo;{form.title}&rdquo; and will review them
@@ -684,7 +684,7 @@ export function JobForm() {
         ) : (
           <Button onClick={handleSubmit} disabled={loading || !form.terms}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {loading ? 'Submitting...' : 'Submit Job Request'}
+            {loading ? 'Submitting...' : 'Submit Requirement'}
           </Button>
         )}
       </div>

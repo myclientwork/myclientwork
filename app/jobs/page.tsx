@@ -41,12 +41,19 @@ export default async function JobsPage() {
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              Job Openings
+              Open Requirements & Positions
             </h1>
-            <p className="mt-6 text-lg text-muted-foreground">
-              Browse our open positions. Sign in to apply — it takes less than
-              a minute.
+            <p className="mt-4 text-lg text-muted-foreground">
+              Explore open project scopes and engineering positions. Have a custom web or mobile app in mind?
             </p>
+            <div className="mt-6 flex justify-center">
+              <Button asChild>
+                <Link href="/post-a-job">
+                  Post Your Project Requirement
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

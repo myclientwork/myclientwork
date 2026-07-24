@@ -16,6 +16,8 @@ import {
 import { supabase } from '@/lib/supabase';
 import type { JobRequest } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+
 const STATUS_COLORS: Record<string, string> = {
   SUBMITTED: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
   UNDER_REVIEW: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
@@ -58,8 +60,8 @@ export default function AdminJobsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">All Jobs</h1>
-        <p className="mt-1 text-muted-foreground">Manage all submitted job requests.</p>
+        <h1 className="text-2xl font-bold tracking-tight">Client Requirements</h1>
+        <p className="mt-1 text-muted-foreground">Review and manage all submitted client project requirements.</p>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">

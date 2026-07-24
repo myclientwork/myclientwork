@@ -1,23 +1,22 @@
-import { AdminGuard } from '@/components/site/admin-guard';
-import { JobPostingForm } from '@/components/site/job-posting-form';
+import { JobForm } from '@/components/site/job-form';
 
 export const metadata = {
-  title: 'Post a Job',
-  description: 'Create a new job posting (admin only).',
+  title: 'Post Project Requirement',
+  description: 'Submit your website or mobile app development project requirements.',
 };
 
-export default function PostAJobPage() {
+export default function PostRequirementPage() {
   return (
     <>
       <section className="border-b border-border/60 bg-secondary/30">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              Post a Job
+              Post Project Requirement
             </h1>
             <p className="mt-6 text-lg text-muted-foreground">
-              Create a new job posting. Published jobs will be visible to all
-              visitors, and logged-in users can apply.
+              Fill out your project specifications, scope, budget, and timeline.
+              Our engineering team will review your requirements and get in touch with a custom proposal.
             </p>
           </div>
         </div>
@@ -25,11 +24,7 @@ export default function PostAJobPage() {
 
       <section className="py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AdminGuard>
-            <div className="mx-auto max-w-3xl">
-              <JobPostingForm />
-            </div>
-          </AdminGuard>
+          <JobForm />
         </div>
       </section>
     </>

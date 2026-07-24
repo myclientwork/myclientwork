@@ -32,9 +32,7 @@ const navLinks = [
   { href: '/about', label: 'About' },
   { href: '/services', label: 'Services' },
   { href: '/projects', label: 'Projects' },
-  { href: '/jobs', label: 'Jobs' },
-  { href: '/members', label: 'Team' },
-  { href: '/products', label: 'Products' },
+  { href: '/post-a-job', label: 'Post Requirement' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -143,9 +141,9 @@ export function SiteHeader() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard/applications" className="flex items-center gap-2">
+                      <Link href="/dashboard/jobs" className="flex items-center gap-2">
                         <Briefcase className="h-4 w-4" />
-                        My Applications
+                        My Requirements
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -225,11 +223,8 @@ export function SiteHeader() {
                       <span className="text-xs text-primary font-semibold">Admin</span>
                     )}
                   </div>
-                  <Link href="/dashboard" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-                    <LayoutDashboard className="h-4 w-4" /> Dashboard
-                  </Link>
-                  <Link href="/dashboard/applications" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-                    <Briefcase className="h-4 w-4" /> My Applications
+                  <Link href="/dashboard/jobs" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+                    <Briefcase className="h-4 w-4" /> My Requirements
                   </Link>
                   {isAdmin && (
                     <Link href="/admin" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-primary">

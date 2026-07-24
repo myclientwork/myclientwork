@@ -32,18 +32,10 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link
-                  href="/members"
+                  href="/post-a-job"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  Team
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/jobs"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Jobs
+                  Post Requirement
                 </Link>
               </li>
               <li>
@@ -52,6 +44,14 @@ export function SiteFooter() {
                   className="text-muted-foreground hover:text-foreground"
                 >
                   Services
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/products"
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Products
                 </Link>
               </li>
               <li>
