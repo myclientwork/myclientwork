@@ -18,7 +18,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
 import type { ProjectWithMembers } from '@/lib/types';
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 type Props = { params: { slug: string } };
 

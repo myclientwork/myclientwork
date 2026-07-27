@@ -51,15 +51,35 @@ export default function RegisterPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.full_name || !form.email || !form.password) {
+
+    const trimmedName = form.full_name.trim();
+    const trimmedEmail = form.email.trim().toLowerCase();
+    const trimmedPassword = form.password;
+    const trimmedConfirm = form.confirm;
+
+    // ── Client-side validation ──────────────────────────────────────
+    if (!trimmedName || !trimmedEmail || !trimmedPassword) {
       toast.error('Please fill in all fields.');
       return;
     }
-    if (form.password.length < 6) {
+
+    if (trimmedName.length < 2) {
+      toast.error('Full name must be at least 2 characters.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+
+    if (trimmedPassword.length < 6) {
       toast.error('Password must be at least 6 characters.');
       return;
     }
-    if (form.password !== form.confirm) {
+
+    if (trimmedPassword !== trimmedConfirm) {
       toast.error('Passwords do not match.');
       return;
     }
@@ -67,25 +87,74 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: { data: { full_name: form.full_name } },
+        email: trimmedEmail,
+        password: trimmedPassword,
+        options: { data: { full_name: trimmedName } },
       });
-      if (error) throw error;
 
-      if (data.user) {
+      if (error) {
+        // Provide user-friendly messages for common Supabase auth errors
+        const msg = error.message.toLowerCase();
+        if (msg.includes('already registered') || msg.includes('already been registered')) {
+          throw new Error('This email is already registered. Please sign in instead.');
+        }
+        if (msg.includes('password') && msg.includes('weak')) {
+          throw new Error('Password is too weak. Please use a stronger password with at least 6 characters.');
+        }
+        if (msg.includes('too many requests') || msg.includes('rate limit')) {
+          throw new Error('Too many attempts. Please wait a moment and try again.');
+        }
+        throw error;
+      }
+
+      // ── Handle email confirmation requirement ─────────────────────
+      // When email confirmation is enabled in Supabase, signUp returns
+      // a user with an empty identities array. The user must verify
+      // their email before they can sign in.
+      if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+        toast.success(
+          'An account with this email already exists. Please sign in or check your email for a confirmation link.',
+          { duration: 5000 }
+        );
+        router.push('/auth/login');
+        return;
+      }
+
+      // Check if session was established (email confirmation disabled)
+      if (data.session) {
+        // Session exists — user is immediately signed in
+        if (data.user) {
+          const { error: profileError } = await supabase.from('user_profiles').insert({
+            id: data.user.id,
+            email: trimmedEmail,
+            full_name: trimmedName,
+          });
+          if (profileError) {
+            console.error('Profile creation error:', profileError);
+            // Non-fatal: profile might already exist
+          }
+        }
+
+        toast.success('Account created! Welcome to MyClientWork.');
+        router.push('/homepage');
+      } else if (data.user) {
+        // No session but user exists — email confirmation is required
+        // Still try to create the profile so it's ready when they confirm
         const { error: profileError } = await supabase.from('user_profiles').insert({
           id: data.user.id,
-          email: form.email,
-          full_name: form.full_name,
+          email: trimmedEmail,
+          full_name: trimmedName,
         });
         if (profileError) {
           console.error('Profile creation error:', profileError);
         }
-      }
 
-      toast.success('Account created! Welcome to MyClientWork.');
-      router.push('/homepage');
+        toast.success(
+          'Account created! Please check your email to verify your account before signing in.',
+          { duration: 5000 }
+        );
+        router.push('/auth/login');
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to create account.');
     } finally {
@@ -246,4 +315,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-

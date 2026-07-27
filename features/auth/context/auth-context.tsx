@@ -7,6 +7,7 @@ import {
   useState,
   useMemo,
   useCallback,
+  useRef,
   type ReactNode,
 } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
@@ -39,41 +40,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const profileCache = useRef<{ [id: string]: UserProfile | null }>({});
+
   const loadProfile = useCallback(async (userId: string) => {
+    if (profileCache.current[userId] !== undefined) {
+      setProfile(profileCache.current[userId]);
+      return;
+    }
     const { data } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('id', userId)
       .maybeSingle();
-    setProfile(data as UserProfile | null);
+    const fetchedProfile = data as UserProfile | null;
+    profileCache.current[userId] = fetchedProfile;
+    setProfile(fetchedProfile);
   }, []);
 
   const refreshProfile = useCallback(async () => {
-    if (user) await loadProfile(user.id);
+    if (user) {
+      delete profileCache.current[user.id];
+      await loadProfile(user.id);
+    }
   }, [user, loadProfile]);
 
   useEffect(() => {
     let isMounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!isMounted) return;
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        loadProfile(session.user.id).finally(() => {
-          if (isMounted) setLoading(false);
-        });
-      } else {
-        setLoading(false);
-      }
-    });
-
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
       if (!isMounted) return;
-      setSession(session);
-      const newUser = session?.user ?? null;
+      setSession(currentSession);
+      const newUser = currentSession?.user ?? null;
       setUser(newUser);
 
       if (newUser) {
@@ -81,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setProfile(null);
       }
-      setLoading(false);
+      if (isMounted) setLoading(false);
     });
 
     return () => {

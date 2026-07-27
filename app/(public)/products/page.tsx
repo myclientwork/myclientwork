@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import type { Product } from '@/lib/types';
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 export const metadata = {
   title: 'Software Products',

@@ -13,7 +13,7 @@ import { ApplyForm } from '@/features/jobs/components/apply-form';
 import { AuthGuard } from '@/features/auth/components/auth-guard';
 import type { JobPosting } from '@/lib/types';
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 type Props = { params: { slug: string } };
 

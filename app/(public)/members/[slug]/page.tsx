@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 import type { Member, ProjectWithMembers } from '@/lib/types';
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 type Props = { params: { slug: string } };
 

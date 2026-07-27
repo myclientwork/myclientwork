@@ -7,7 +7,7 @@ import { AuthProvider } from '@/lib/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'sonner';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://myclientwork.com'),

@@ -20,7 +20,7 @@ import { supabase } from '@/lib/supabase';
 import type { ProjectWithMembers, Member } from '@/lib/types';
 import { HeroSection } from '@/components/hero-section';
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 async function getHomeData() {
   try {
