@@ -43,6 +43,6 @@ export function getAuthCallbackUrl(): string {
     return `${siteUrl.replace(/\/+$/, '')}/auth/callback`;
   }
 
-  return '/auth/callback';
+  return 'https://www.myclientwork.online/auth/callback';
 }
 

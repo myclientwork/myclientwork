@@ -121,6 +121,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
+    // Universal PKCE Code Exchange for any page (e.g. landing on /?code=... or /auth/callback?code=...)
+    if (typeof window !== 'undefined' && window.location.search.includes('code=')) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      if (code) {
+        supabase.auth
+          .exchangeCodeForSession(code)
+          .then(({ data }) => {
+            if (!isMounted) return;
+            // Strip ?code= parameter immediately from address bar
+            window.history.replaceState(null, '', window.location.pathname);
+            if (data?.session?.user) {
+              setSession(data.session);
+              setUser(data.session.user);
+              loadProfile(data.session.user).then((p) => {
+                if (!isMounted) return;
+                setLoading(false);
+                const targetRoute = p?.role === 'admin' ? '/admin' : '/dashboard';
+                if (
+                  window.location.pathname === '/' ||
+                  window.location.pathname.startsWith('/auth/')
+                ) {
+                  window.location.replace(targetRoute);
+                }
+              });
+            }
+          })
+          .catch((err) => {
+            console.error('PKCE exchange error:', err);
+          });
+      }
+    }
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
@@ -136,13 +169,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       if (isMounted) setLoading(false);
 
-      // Clean up URL hash if access_token is present in URL (mobile implicit flow)
-      if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
-        setTimeout(() => {
-          if (window.location.hash.includes('access_token=')) {
-            window.history.replaceState(null, '', window.location.pathname + window.location.search);
-          }
-        }, 300);
+      // Clean up URL parameters / hash if code= or access_token= is present in URL
+      if (typeof window !== 'undefined') {
+        if (
+          window.location.search.includes('code=') ||
+          window.location.hash.includes('access_token=')
+        ) {
+          setTimeout(() => {
+            window.history.replaceState(null, '', window.location.pathname);
+          }, 300);
+        }
       }
     });
 
