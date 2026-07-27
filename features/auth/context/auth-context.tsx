@@ -42,25 +42,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const profileCache = useRef<{ [id: string]: UserProfile | null }>({});
 
-  const loadProfile = useCallback(async (userId: string) => {
-    if (profileCache.current[userId] !== undefined) {
+  const loadProfile = useCallback(async (userObj: User) => {
+    const userId = userObj.id;
+    if (profileCache.current[userId]) {
       setProfile(profileCache.current[userId]);
-      return;
+      return profileCache.current[userId];
     }
+
+    // Try fetching existing profile
     const { data } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('id', userId)
       .maybeSingle();
-    const fetchedProfile = data as UserProfile | null;
-    profileCache.current[userId] = fetchedProfile;
-    setProfile(fetchedProfile);
+
+    if (data) {
+      const fetchedProfile = data as UserProfile;
+      profileCache.current[userId] = fetchedProfile;
+      setProfile(fetchedProfile);
+      return fetchedProfile;
+    }
+
+    // First-time OAuth user (e.g. mobile Google sign-in) — auto-create profile
+    const fullName =
+      userObj.user_metadata?.full_name ||
+      userObj.user_metadata?.name ||
+      userObj.email?.split('@')[0] ||
+      'User';
+
+    const avatarUrl =
+      userObj.user_metadata?.avatar_url ||
+      userObj.user_metadata?.picture ||
+      null;
+
+    const { error: insertError } = await supabase.from('user_profiles').insert({
+      id: userId,
+      email: userObj.email!,
+      full_name: fullName,
+      avatar_url: avatarUrl,
+    });
+
+    if (insertError) {
+      console.error('Auto profile creation error:', insertError);
+    }
+
+    // Fetch again or construct profile
+    const { data: newProfileData } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    const createdProfile: UserProfile = (newProfileData as UserProfile | null) ?? {
+      id: userId,
+      email: userObj.email!,
+      full_name: fullName,
+      avatar_url: avatarUrl,
+      phone: null,
+      company: null,
+      country: null,
+      role: 'user',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    profileCache.current[userId] = createdProfile;
+    setProfile(createdProfile);
+    return createdProfile;
   }, []);
 
   const refreshProfile = useCallback(async () => {
     if (user) {
       delete profileCache.current[user.id];
-      await loadProfile(user.id);
+      await loadProfile(user);
     }
   }, [user, loadProfile]);
 
@@ -76,11 +130,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(newUser);
 
       if (newUser) {
-        await loadProfile(newUser.id);
+        await loadProfile(newUser);
       } else {
         setProfile(null);
       }
       if (isMounted) setLoading(false);
+
+      // Clean up URL hash if access_token is present in URL (mobile implicit flow)
+      if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
+        setTimeout(() => {
+          if (window.location.hash.includes('access_token=')) {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        }, 300);
+      }
     });
 
     return () => {
