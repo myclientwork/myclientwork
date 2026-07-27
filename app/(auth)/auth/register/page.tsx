@@ -30,7 +30,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (user && profile) {
-      router.push(profile.role === 'admin' ? '/admin' : '/homepage');
+      router.push(profile.role === 'admin' ? '/admin' : '/dashboard');
     }
   }, [user, profile, router]);
 
@@ -137,7 +137,7 @@ export default function RegisterPage() {
         }
 
         toast.success('Account created! Welcome to MyClientWork.');
-        router.push('/homepage');
+        router.push('/dashboard');
       } else if (data.user) {
         // No session but user exists — email confirmation is required
         // Still try to create the profile so it's ready when they confirm

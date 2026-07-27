@@ -44,8 +44,8 @@ export default function AuthCallbackPage() {
           }
         }
 
-        // Clean up URL hash if implicit flow tokens (#access_token=...) are present
-        if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
+        // Clean up ?code= and hash fragments from URL bar immediately after exchange
+        if (typeof window !== 'undefined') {
           window.history.replaceState(null, '', window.location.pathname);
         }
 
@@ -107,13 +107,13 @@ export default function AuthCallbackPage() {
           }
 
           toast.success('Welcome to MyClientWork!');
-          router.replace('/homepage');
+          router.replace('/dashboard');
           return;
         }
 
-        // ── Step 4: Redirect based on role ───────────────────────────
+        // ── Step 4: Redirect to Dashboard (or Admin for admins) ──────
         toast.success('Welcome back!');
-        router.replace(profileRole === 'admin' ? '/admin' : '/homepage');
+        router.replace(profileRole === 'admin' ? '/admin' : '/dashboard');
       } catch (err) {
         console.error('Auth callback error:', err);
         toast.error('Something went wrong during authentication. Please try again.');
