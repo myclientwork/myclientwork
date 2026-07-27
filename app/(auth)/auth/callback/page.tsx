@@ -44,6 +44,11 @@ export default function AuthCallbackPage() {
           }
         }
 
+        // Clean up URL hash if implicit flow tokens (#access_token=...) are present
+        if (typeof window !== 'undefined' && window.location.hash.includes('access_token=')) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+
         // ── Step 2: Retrieve the now-established session ─────────────
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
