@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Code2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { getAuthCallbackUrl } from '@/shared/config/supabase';
 import { useAuth } from '@/lib/auth-context';
 
 export default function LoginPage() {
@@ -34,7 +35,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: getAuthCallbackUrl(),
         },
       });
       if (error) throw error;
