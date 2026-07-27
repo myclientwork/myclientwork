@@ -25,7 +25,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (authLoading) return;
     if (user && profile) {
-      router.push(profile.role === 'admin' ? '/admin' : '/homepage');
+      router.push(profile.role === 'admin' ? '/admin' : '/dashboard');
     }
   }, [user, profile, authLoading, router]);
 
@@ -106,7 +106,7 @@ export default function LoginPage() {
         // Wait 500ms before retry
         await new Promise((r) => setTimeout(r, 500));
       }
-      router.push(role === 'admin' ? '/admin' : '/homepage');
+      router.push(role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to sign in.');
     } finally {

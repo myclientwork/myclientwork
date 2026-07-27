@@ -22,29 +22,27 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 /**
- * Returns the canonical authentication callback URL.
- * Prefers window.location.origin on the client side, or NEXT_PUBLIC_SITE_URL in production SSR,
- * falling back to http://localhost:3000/auth/callback.
+ * Returns the canonical authentication callback URL dynamically.
+ * Resolves window.location.origin on the client side, or environment variables in SSR,
+ * eliminating hardcoded localhost references.
  */
 export function getAuthCallbackUrl(): string {
+  if (typeof window !== 'undefined' && window.location.origin) {
+    return `${window.location.origin.replace(/\/+$/, '')}/auth/callback`;
+  }
+
   let siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.NEXT_PUBLIC_VERCEL_URL;
 
-  if (typeof window !== 'undefined' && window.location.origin) {
-    siteUrl = window.location.origin;
+  if (siteUrl) {
+    if (!siteUrl.startsWith('http://') && !siteUrl.startsWith('https://')) {
+      siteUrl = `https://${siteUrl}`;
+    }
+    return `${siteUrl.replace(/\/+$/, '')}/auth/callback`;
   }
 
-  if (!siteUrl) {
-    return 'http://localhost:3000/auth/callback';
-  }
-
-  if (!siteUrl.startsWith('http://') && !siteUrl.startsWith('https://')) {
-    siteUrl = `https://${siteUrl}`;
-  }
-
-  siteUrl = siteUrl.replace(/\/+$/, '');
-  return `${siteUrl}/auth/callback`;
+  return '/auth/callback';
 }
 
