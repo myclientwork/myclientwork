@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 import type { Member } from '@/lib/types';
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 export const metadata = {
   title: 'Our Team',

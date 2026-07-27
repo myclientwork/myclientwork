@@ -46,14 +46,44 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !password) {
+
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedPassword = password;
+
+    // ── Client-side validation ──────────────────────────────────────
+    if (!trimmedEmail || !trimmedPassword) {
       toast.error('Please enter your email and password.');
       return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password: trimmedPassword,
+      });
+
+      if (error) {
+        // Provide user-friendly messages for common Supabase auth errors
+        const msg = error.message.toLowerCase();
+        if (msg.includes('invalid login credentials') || msg.includes('invalid_credentials')) {
+          throw new Error('Invalid email or password. Please check your credentials and try again.');
+        }
+        if (msg.includes('email not confirmed')) {
+          throw new Error('Your email is not verified. Please check your inbox for the confirmation link.');
+        }
+        if (msg.includes('too many requests') || msg.includes('rate limit')) {
+          throw new Error('Too many login attempts. Please wait a moment and try again.');
+        }
+        throw error;
+      }
+
       toast.success('Welcome back!');
       const userId = data.user?.id;
       if (!userId) {
