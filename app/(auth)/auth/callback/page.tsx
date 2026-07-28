@@ -27,6 +27,20 @@ export default function AuthCallbackPage() {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
       const errorParam = urlParams.get('error') || urlParams.get('error_description');
+      const typeParam = urlParams.get('type');
+      const nextParam = urlParams.get('next');
+      const hash = window.location.hash;
+
+      // Check if this callback is for Password Recovery flow
+      if (
+        typeParam === 'recovery' ||
+        hash.includes('type=recovery') ||
+        nextParam?.includes('reset-password')
+      ) {
+        handledRef.current = true;
+        window.location.replace(`/auth/reset-password${window.location.search}${window.location.hash}`);
+        return;
+      }
 
       // 1. Check for OAuth error in URL
       if (errorParam) {
