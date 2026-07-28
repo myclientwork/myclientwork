@@ -156,18 +156,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(initialSession);
         const initialUser = initialSession?.user ?? null;
         setUser(initialUser);
+        setLoading(false);
 
         if (initialUser) {
-          try {
-            await loadProfile(initialUser);
-          } catch (e) {
+          loadProfile(initialUser).catch((e) => {
             console.warn('Error loading initial profile:', e);
-          }
+          });
         }
       } catch (err) {
         console.error('Error fetching initial session:', err);
-      } finally {
         if (isMounted) setLoading(false);
+      } finally {
         cleanOAuthParams();
       }
     }
@@ -176,23 +175,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
+    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
       if (!isMounted) return;
       cleanOAuthParams();
       setSession(currentSession);
       const newUser = currentSession?.user ?? null;
       setUser(newUser);
+      setLoading(false);
 
       if (newUser) {
-        try {
-          await loadProfile(newUser);
-        } catch (e) {
+        loadProfile(newUser).catch((e) => {
           console.warn('Error loading profile on auth change:', e);
-        }
+        });
       } else {
         setProfile(null);
       }
-      if (isMounted) setLoading(false);
       cleanOAuthParams();
     });
 
