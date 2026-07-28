@@ -38,7 +38,7 @@ export default function AuthCallbackPage() {
         nextParam?.includes('reset-password')
       ) {
         handledRef.current = true;
-        window.location.replace(`/auth/reset-password${window.location.search}${window.location.hash}`);
+        window.location.replace(`/reset-password${window.location.search}${window.location.hash}`);
         return;
       }
 

@@ -39,6 +39,7 @@ function cleanOAuthParams() {
   // Never strip query/hash parameters on callback or reset-password routes!
   if (
     window.location.pathname.startsWith('/auth/callback') ||
+    window.location.pathname.startsWith('/reset-password') ||
     window.location.pathname.startsWith('/auth/reset-password')
   ) {
     return;
@@ -186,8 +187,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Handle Password Recovery flow event
       if (event === 'PASSWORD_RECOVERY') {
-        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth/reset-password')) {
-          window.location.href = '/auth/reset-password';
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/reset-password')) {
+          window.location.href = '/reset-password';
           return;
         }
       }
