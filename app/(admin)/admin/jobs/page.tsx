@@ -32,17 +32,13 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const JOB_STATUS_OPTIONS = [
-  'SUBMITTED',
   'UNDER_REVIEW',
-  'QUALIFIED',
   'ACCEPTED',
   'IN_PROGRESS',
   'COMPLETED',
-  'REJECTED',
-  'CANCELLED',
 ];
 
-const FILTER_STATUSES = ['ALL', ...JOB_STATUS_OPTIONS];
+const FILTER_STATUSES = ['ALL', 'SUBMITTED', ...JOB_STATUS_OPTIONS, 'REJECTED', 'CANCELLED'];
 
 export default function AdminJobsPage() {
   const [jobs, setJobs] = useState<JobRequest[]>([]);
@@ -250,7 +246,7 @@ export default function AdminJobsPage() {
                           <SelectValue placeholder="Change status..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {JOB_STATUS_OPTIONS.map((statusOption) => (
+                          {Array.from(new Set([job.status, ...JOB_STATUS_OPTIONS])).map((statusOption) => (
                             <SelectItem key={statusOption} value={statusOption} className="text-xs">
                               {statusOption.replace(/_/g, ' ')}
                             </SelectItem>
