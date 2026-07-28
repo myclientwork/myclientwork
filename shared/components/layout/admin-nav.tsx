@@ -15,6 +15,7 @@ import {
   Package,
   ShoppingCart,
   PenSquare,
+  Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -33,6 +34,7 @@ const links = [
   { href: '/admin/projects', label: 'Projects', icon: FolderKanban },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 export function AdminNav() {

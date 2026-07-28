@@ -4,9 +4,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Phone, Linkedin, Github, Heart } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useSiteSettings } from '@/shared/context/settings-context';
 
 export function SiteFooter() {
   const { user, loading } = useAuth();
+  const { settings } = useSiteSettings();
+
+  const logoSrc = settings.logo_url || '/images/1784378767326_(1).png';
+  const siteName = settings.site_name || 'MyClientWork';
+  const siteTagline = settings.site_tagline || 'Digital Services';
+  const contactEmail = settings.contact_email || 'myclientwork3@gmail.com';
 
   return (
     <footer className="border-t border-border/50 bg-card/80 backdrop-blur-md text-card-foreground transition-colors">
@@ -17,33 +24,34 @@ export function SiteFooter() {
             <Link href="/" className="flex items-center gap-2.5 font-extrabold text-xl group">
               <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full ring-2 ring-primary/30 transition-transform group-hover:scale-105">
                 <Image
-                  src="/images/1784378767326_(1).png"
-                  alt="MyClientWork"
+                  src={logoSrc}
+                  alt={siteName}
                   fill
                   className="object-cover"
+                  unoptimized={logoSrc.startsWith('data:')}
                   onError={(e) => {
                     (e.target as HTMLElement).style.display = 'none';
                   }}
                 />
                 <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground font-bold text-xs">
-                  MCW
+                  {siteName.charAt(0)}
                 </div>
               </div>
               <div className="flex flex-col">
                 <span className="block text-base font-extrabold leading-tight tracking-tight">
-                  My<span className="text-primary">client</span>work
+                  {siteName}
                 </span>
                 <span className="block text-[9px] font-semibold leading-tight text-muted-foreground tracking-wider uppercase">
-                  Digital Services
+                  {siteTagline}
                 </span>
               </div>
             </Link>
             <p className="max-w-sm text-xs leading-relaxed text-muted-foreground">
-              Production-grade web application platform for digital agencies and clients. We turn complex project requirements into high-performance software.
+              Production-grade web application platform. We turn complex project requirements into high-performance software.
             </p>
             <div className="flex gap-2 pt-2">
               <a
-                href="mailto:myclientwork3@gmail.com"
+                href={`mailto:${contactEmail}`}
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/80 bg-background text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
                 aria-label="Email"
               >

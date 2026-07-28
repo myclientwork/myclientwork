@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
+import { useSiteSettings } from '@/shared/context/settings-context';
 import { toast } from 'sonner';
 
 const navLinks = [
@@ -45,7 +46,12 @@ export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, profile, isAdmin, signOut, loading } = useAuth();
+  const { settings } = useSiteSettings();
   const [open, setOpen] = useState(false);
+
+  const logoSrc = settings.logo_url || '/images/1784378767326_(1).png';
+  const siteName = settings.site_name || 'MyClientWork';
+  const siteTagline = settings.site_tagline || 'Digital Services';
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -113,25 +119,26 @@ export function SiteHeader() {
         <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
           <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-primary/30 transition-transform group-hover:scale-105">
             <Image
-              src="/images/1784378767326_(1).png"
-              alt="MyClientWork"
+              src={logoSrc}
+              alt={siteName}
               fill
               className="object-cover"
               priority
+              unoptimized={logoSrc.startsWith('data:')}
               onError={(e) => {
                 (e.target as HTMLElement).style.display = 'none';
               }}
             />
             <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground font-bold text-xs">
-              MCW
+              {siteName.charAt(0)}
             </div>
           </div>
           <div className="flex flex-col">
             <span className="block text-sm sm:text-base font-extrabold leading-tight tracking-tight">
-              My<span className="text-primary">client</span>work
+              {siteName}
             </span>
             <span className="block text-[8px] sm:text-[9px] font-semibold leading-tight text-muted-foreground tracking-wider uppercase">
-              Digital Services
+              {siteTagline}
             </span>
           </div>
         </Link>
