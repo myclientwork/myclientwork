@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Code2, Check, Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
+import { Loader2, Check, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getAuthCallbackUrl } from '@/shared/config/supabase';
 import { useAuth } from '@/lib/auth-context';
@@ -30,7 +31,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (user && profile) {
-      router.push(profile.role === 'admin' ? '/admin' : '/dashboard');
+      router.push(profile.role === 'admin' ? '/admin' : '/');
     }
   }, [user, profile, router]);
 
@@ -137,7 +138,7 @@ export default function RegisterPage() {
         }
 
         toast.success('Account created! Welcome to MyClientWork.');
-        router.push('/dashboard');
+        router.push('/');
       } else if (data.user) {
         // No session but user exists — email confirmation is required
         // Still try to create the profile so it's ready when they confirm
@@ -167,9 +168,23 @@ export default function RegisterPage() {
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Code2 className="h-6 w-6" />
-          </div>
+          <Link href="/" className="mx-auto mb-3 flex items-center justify-center gap-2.5 group w-fit">
+            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full ring-2 ring-primary/30 transition-transform group-hover:scale-105">
+              <Image
+                src="/images/1784378767326_(1).png"
+                alt="MyClientWork"
+                fill
+                className="object-cover"
+                priority
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
+              <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground font-bold text-xs">
+                MCW
+              </div>
+            </div>
+          </Link>
           <CardTitle className="text-2xl">Create your account</CardTitle>
           <CardDescription>Sign up to post jobs and track your requests</CardDescription>
         </CardHeader>
