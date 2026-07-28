@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { ProductPurchase } from '@/features/products/components/product-purchase';
 import type { Product } from '@/lib/types';
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 type Props = { params: { slug: string } };
 

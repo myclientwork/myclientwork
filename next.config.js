@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  swcMinify: true,
+  compress: true,
+  reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns', 'recharts'],
+  },
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       // Supabase Storage (avatars, project images, product images)
       {

@@ -1,25 +1,40 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Code2, Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { getAuthCallbackUrl } from '@/shared/config/supabase';
 import { useAuth } from '@/lib/auth-context';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, profile, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Show error from OAuth callback redirect
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error) {
+      toast.error(error);
+      // Clean the URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('error');
+      window.history.replaceState(window.history.state ?? {}, '', url.pathname);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -34,7 +49,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: getAuthCallbackUrl(),
         },
       });
       if (error) throw error;
@@ -46,18 +61,48 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !password) {
+
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedPassword = password;
+
+    // ── Client-side validation ──────────────────────────────────────
+    if (!trimmedEmail || !trimmedPassword) {
       toast.error('Please enter your email and password.');
       return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password: trimmedPassword,
+      });
+
+      if (error) {
+        // Provide user-friendly messages for common Supabase auth errors
+        const msg = error.message.toLowerCase();
+        if (msg.includes('invalid login credentials') || msg.includes('invalid_credentials')) {
+          throw new Error('Invalid email or password. Please check your credentials and try again.');
+        }
+        if (msg.includes('email not confirmed')) {
+          throw new Error('Your email is not verified. Please check your inbox for the confirmation link.');
+        }
+        if (msg.includes('too many requests') || msg.includes('rate limit')) {
+          throw new Error('Too many login attempts. Please wait a moment and try again.');
+        }
+        throw error;
+      }
+
       toast.success('Welcome back!');
       const userId = data.user?.id;
       if (!userId) {
-        router.push('/dashboard');
+        router.push('/');
         return;
       }
       // Retry up to 3 times to handle RLS / replication lag
@@ -87,9 +132,23 @@ export default function LoginPage() {
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Code2 className="h-6 w-6" />
-          </div>
+          <Link href="/" className="mx-auto mb-3 flex items-center justify-center gap-2.5 group w-fit">
+            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full ring-2 ring-primary/30 transition-transform group-hover:scale-105">
+              <Image
+                src="/images/1784378767326_(1).png"
+                alt="MyClientWork"
+                fill
+                className="object-cover"
+                priority
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
+              <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground font-bold text-xs">
+                MCW
+              </div>
+            </div>
+          </Link>
           <CardTitle className="text-2xl">Welcome back</CardTitle>
           <CardDescription>Sign in to your account to continue</CardDescription>
         </CardHeader>

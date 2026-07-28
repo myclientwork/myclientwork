@@ -99,8 +99,25 @@ export type UserProfile = {
   company: string | null;
   country: string | null;
   role: 'user' | 'admin';
+  status: 'active' | 'suspended';
   created_at: string;
   updated_at: string;
+};
+
+export type SiteSetting = {
+  id: string;
+  key: string;
+  value: string | null;
+  updated_at: string;
+};
+
+export type UserActivityLog = {
+  id: string;
+  user_id: string;
+  event: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  created_at: string;
 };
 
 export type JobPosting = {

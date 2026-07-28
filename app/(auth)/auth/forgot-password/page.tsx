@@ -2,39 +2,44 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { toast } from 'sonner';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, KeyRound, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Loader2, ArrowLeft, MailCheck } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { getAuthResetPasswordUrl } from '@/shared/config/supabase';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email) {
+
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) {
       toast.error('Please enter your email address.');
       return;
     }
 
     setLoading(true);
     try {
-      const redirectTo = `${window.location.origin}/auth/reset-password`;
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo,
+      const redirectUrl = getAuthResetPasswordUrl();
+      const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+        redirectTo: redirectUrl,
       });
 
       if (error) throw error;
 
-      setSent(true);
+      setSubmitted(true);
       toast.success('Password reset link sent to your email.');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to send reset link.');
+      console.error('Password reset error:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to send reset link. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -44,43 +49,48 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <KeyRound className="h-6 w-6" />
-          </div>
+          <Link href="/" className="mx-auto mb-3 flex items-center justify-center gap-2.5 group w-fit">
+            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full ring-2 ring-primary/30 transition-transform group-hover:scale-105">
+              <Image
+                src="/images/1784378767326_(1).png"
+                alt="MyClientWork"
+                fill
+                className="object-cover"
+                priority
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
+              <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground font-bold text-xs">
+                MCW
+              </div>
+            </div>
+          </Link>
           <CardTitle className="text-2xl">Reset your password</CardTitle>
           <CardDescription>
-            {sent
-              ? 'Check your inbox for password reset instructions'
-              : 'Enter your email and we will send you a reset link'}
+            Enter your email address and we&apos;ll send you a link to reset your password
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {sent ? (
-            <div className="space-y-6 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10 text-success animate-scale-in">
-                <CheckCircle2 className="h-8 w-8" />
+          {submitted ? (
+            <div className="space-y-4 text-center py-4">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <MailCheck className="h-6 w-6" />
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                We sent a password reset link to{' '}
-                <span className="font-semibold text-foreground">{email}</span>.
-                Click the link in the email to set a new password.
+              <h3 className="font-semibold text-lg">Check your inbox</h3>
+              <p className="text-sm text-muted-foreground">
+                We sent a password reset link to <span className="font-medium text-foreground">{email}</span>. Please check your email to continue.
               </p>
-              <div className="pt-2 flex flex-col gap-3">
-                <Button variant="outline" onClick={() => setSent(false)} className="w-full">
-                  Try another email
-                </Button>
-                <Button asChild variant="ghost" className="w-full">
-                  <Link href="/auth/login">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Sign In
-                  </Link>
-                </Button>
-              </div>
+              <Button variant="outline" className="w-full mt-4" asChild>
+                <Link href="/auth/login">
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Back to Sign In
+                </Link>
+              </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
+                <Label htmlFor="email">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
@@ -90,16 +100,20 @@ export default function ForgotPasswordPage() {
                   required
                 />
               </div>
+
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {loading ? 'Sending link...' : 'Send Reset Link'}
               </Button>
-              <p className="pt-2 text-center text-sm text-muted-foreground">
-                Remembered your password?{' '}
-                <Link href="/auth/login" className="font-medium text-primary hover:underline">
-                  Sign in
+
+              <div className="pt-2 text-center">
+                <Link
+                  href="/auth/login"
+                  className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Back to Sign In
                 </Link>
-              </p>
+              </div>
             </form>
           )}
         </CardContent>

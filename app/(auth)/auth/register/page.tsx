@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Code2, Check, Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
+import { Loader2, Check, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { getAuthCallbackUrl } from '@/shared/config/supabase';
 import { useAuth } from '@/lib/auth-context';
 
 export default function RegisterPage() {
@@ -39,7 +41,7 @@ export default function RegisterPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: getAuthCallbackUrl(),
         },
       });
       if (error) throw error;
@@ -51,15 +53,35 @@ export default function RegisterPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.full_name || !form.email || !form.password) {
+
+    const trimmedName = form.full_name.trim();
+    const trimmedEmail = form.email.trim().toLowerCase();
+    const trimmedPassword = form.password;
+    const trimmedConfirm = form.confirm;
+
+    // ── Client-side validation ──────────────────────────────────────
+    if (!trimmedName || !trimmedEmail || !trimmedPassword) {
       toast.error('Please fill in all fields.');
       return;
     }
-    if (form.password.length < 6) {
+
+    if (trimmedName.length < 2) {
+      toast.error('Full name must be at least 2 characters.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+
+    if (trimmedPassword.length < 6) {
       toast.error('Password must be at least 6 characters.');
       return;
     }
-    if (form.password !== form.confirm) {
+
+    if (trimmedPassword !== trimmedConfirm) {
       toast.error('Passwords do not match.');
       return;
     }
@@ -67,25 +89,74 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: { data: { full_name: form.full_name } },
+        email: trimmedEmail,
+        password: trimmedPassword,
+        options: { data: { full_name: trimmedName } },
       });
-      if (error) throw error;
 
-      if (data.user) {
+      if (error) {
+        // Provide user-friendly messages for common Supabase auth errors
+        const msg = error.message.toLowerCase();
+        if (msg.includes('already registered') || msg.includes('already been registered')) {
+          throw new Error('This email is already registered. Please sign in instead.');
+        }
+        if (msg.includes('password') && msg.includes('weak')) {
+          throw new Error('Password is too weak. Please use a stronger password with at least 6 characters.');
+        }
+        if (msg.includes('too many requests') || msg.includes('rate limit')) {
+          throw new Error('Too many attempts. Please wait a moment and try again.');
+        }
+        throw error;
+      }
+
+      // ── Handle email confirmation requirement ─────────────────────
+      // When email confirmation is enabled in Supabase, signUp returns
+      // a user with an empty identities array. The user must verify
+      // their email before they can sign in.
+      if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+        toast.success(
+          'An account with this email already exists. Please sign in or check your email for a confirmation link.',
+          { duration: 5000 }
+        );
+        router.push('/auth/login');
+        return;
+      }
+
+      // Check if session was established (email confirmation disabled)
+      if (data.session) {
+        // Session exists — user is immediately signed in
+        if (data.user) {
+          const { error: profileError } = await supabase.from('user_profiles').insert({
+            id: data.user.id,
+            email: trimmedEmail,
+            full_name: trimmedName,
+          });
+          if (profileError) {
+            console.error('Profile creation error:', profileError);
+            // Non-fatal: profile might already exist
+          }
+        }
+
+        toast.success('Account created! Welcome to MyClientWork.');
+        router.push('/');
+      } else if (data.user) {
+        // No session but user exists — email confirmation is required
+        // Still try to create the profile so it's ready when they confirm
         const { error: profileError } = await supabase.from('user_profiles').insert({
           id: data.user.id,
-          email: form.email,
-          full_name: form.full_name,
+          email: trimmedEmail,
+          full_name: trimmedName,
         });
         if (profileError) {
           console.error('Profile creation error:', profileError);
         }
-      }
 
-      toast.success('Account created! Welcome to MyClientWork.');
-      router.push('/dashboard');
+        toast.success(
+          'Account created! Please check your email to verify your account before signing in.',
+          { duration: 5000 }
+        );
+        router.push('/auth/login');
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to create account.');
     } finally {
@@ -97,9 +168,23 @@ export default function RegisterPage() {
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Code2 className="h-6 w-6" />
-          </div>
+          <Link href="/" className="mx-auto mb-3 flex items-center justify-center gap-2.5 group w-fit">
+            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full ring-2 ring-primary/30 transition-transform group-hover:scale-105">
+              <Image
+                src="/images/1784378767326_(1).png"
+                alt="MyClientWork"
+                fill
+                className="object-cover"
+                priority
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
+              <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground font-bold text-xs">
+                MCW
+              </div>
+            </div>
+          </Link>
           <CardTitle className="text-2xl">Create your account</CardTitle>
           <CardDescription>Sign up to post jobs and track your requests</CardDescription>
         </CardHeader>
@@ -246,4 +331,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
