@@ -65,6 +65,18 @@ export function SiteHeader() {
     router.refresh();
   }
 
+  // Prevent background scrolling while mobile navigation drawer is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
+
   // Listen to close-main-navigation custom event
   useEffect(() => {
     const handleCloseMain = () => setOpen(false);
@@ -323,36 +335,44 @@ export function SiteHeader() {
 
       </div>
 
-      {/* Backdrop overlay that closes the menu when tapped */}
-      {open && (
-        <div
-          className="fixed inset-0 top-16 z-40 bg-black/40 backdrop-blur-sm md:hidden transition-all duration-200"
-          onClick={() => setOpen(false)}
-        />
-      )}
+      {/* Semi-transparent Backdrop overlay that closes the menu when tapped outside */}
+      <div
+        className={cn(
+          'fixed inset-0 top-16 z-40 bg-black/60 backdrop-blur-sm md:hidden transition-opacity duration-300 ease-in-out',
+          open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        )}
+        onClick={() => setOpen(false)}
+        aria-hidden="true"
+      />
 
-      {/* Mobile Drawer (Only visible on tablet & mobile md:hidden) */}
-      {open && (
-        <div className="border-t border-border/60 bg-background/95 backdrop-blur-lg md:hidden animate-fade-in relative z-50">
-          <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6">
-            {activeNavLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  'rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
-                  isActive(link.href)
-                    ? 'bg-primary/10 text-primary font-semibold'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      )}
+      {/* Mobile Navigation Drawer Panel */}
+      <div
+        className={cn(
+          'fixed left-0 right-0 top-16 z-50 border-b border-border/60 bg-background/95 backdrop-blur-lg md:hidden transition-all duration-300 ease-in-out shadow-2xl',
+          open
+            ? 'translate-y-0 opacity-100 pointer-events-auto'
+            : '-translate-y-4 opacity-0 pointer-events-none'
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6">
+          {activeNavLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setOpen(false)}
+              className={cn(
+                'rounded-lg px-3.5 py-3 text-sm font-medium transition-all duration-200',
+                isActive(link.href)
+                  ? 'bg-primary/10 text-primary font-semibold'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </header>
   );
 }
