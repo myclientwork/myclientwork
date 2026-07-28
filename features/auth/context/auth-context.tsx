@@ -36,8 +36,13 @@ const AuthContext = createContext<AuthContextType>({
 
 function cleanOAuthParams() {
   if (typeof window === 'undefined') return;
-  // Never strip query parameters on /auth/callback so AuthCallbackPage can read the code parameter!
-  if (window.location.pathname.startsWith('/auth/callback')) return;
+  // Never strip query/hash parameters on callback or reset-password routes!
+  if (
+    window.location.pathname.startsWith('/auth/callback') ||
+    window.location.pathname.startsWith('/auth/reset-password')
+  ) {
+    return;
+  }
 
   const { search, hash, pathname } = window.location;
   let needsClean = false;
@@ -129,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       company: null,
       country: null,
       role: 'user',
+      status: 'active',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
