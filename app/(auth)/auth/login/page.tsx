@@ -24,7 +24,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (authLoading) return;
     if (user && profile) {
-      router.push(profile.role === 'admin' ? '/admin' : '/homepage');
+      router.push(profile.role === 'admin' ? '/admin' : '/dashboard');
     }
   }, [user, profile, authLoading, router]);
 
@@ -75,7 +75,7 @@ export default function LoginPage() {
         // Wait 500ms before retry
         await new Promise((r) => setTimeout(r, 500));
       }
-      router.push(role === 'admin' ? '/admin' : '/homepage');
+      router.push(role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to sign in.');
     } finally {
@@ -150,7 +150,15 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
                 <Input
                   id="password"

@@ -52,10 +52,10 @@ export default function AdminUsersPage() {
     const newRole = targetUser.role === 'admin' ? 'user' : 'admin';
     setUpdatingId(targetUser.id);
     try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ role: newRole, updated_at: new Date().toISOString() })
-        .eq('id', targetUser.id);
+      const { error } = await supabase.rpc('admin_set_user_role', {
+        p_target_user_id: targetUser.id,
+        p_new_role: newRole,
+      });
       if (error) throw error;
       setUsers(users.map((u) => (u.id === targetUser.id ? { ...u, role: newRole as 'user' | 'admin' } : u)));
       toast.success(

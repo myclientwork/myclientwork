@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { JobForm } from '@/features/jobs/components/job-form';
-import { AuthGuard } from '@/features/auth/components/auth-guard';
 
 export const metadata = {
   title: 'Post Project Requirement',
@@ -11,7 +10,7 @@ export const metadata = {
 
 export default function PostRequirementPage() {
   return (
-    <AuthGuard>
+    <>
       <section className="border-b border-border/60 bg-secondary/30">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="mb-6">
@@ -39,6 +38,6 @@ export default function PostRequirementPage() {
           <JobForm />
         </div>
       </section>
-    </AuthGuard>
+    </>
   );
 }

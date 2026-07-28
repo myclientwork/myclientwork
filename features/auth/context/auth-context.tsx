@@ -55,17 +55,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Initial session check
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!isMounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        loadProfile(session.user.id).finally(() => {
-          if (isMounted) setLoading(false);
-        });
-      } else {
-        setLoading(false);
+        await loadProfile(session.user.id);
       }
+      if (isMounted) setLoading(false);
     });
 
     const {
@@ -81,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setProfile(null);
       }
-      setLoading(false);
+      if (isMounted) setLoading(false);
     });
 
     return () => {

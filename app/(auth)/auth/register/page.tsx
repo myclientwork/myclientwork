@@ -29,7 +29,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (user && profile) {
-      router.push(profile.role === 'admin' ? '/admin' : '/homepage');
+      router.push(profile.role === 'admin' ? '/admin' : '/dashboard');
     }
   }, [user, profile, router]);
 
@@ -85,7 +85,7 @@ export default function RegisterPage() {
       }
 
       toast.success('Account created! Welcome to MyClientWork.');
-      router.push('/homepage');
+      router.push('/dashboard');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to create account.');
     } finally {

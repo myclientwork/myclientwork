@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowRight,
   Code2,
@@ -20,7 +21,7 @@ import { supabase } from '@/lib/supabase';
 import type { ProjectWithMembers, Member } from '@/lib/types';
 import { HeroSection } from '@/components/hero-section';
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 async function getHomeData() {
   try {
@@ -188,11 +189,12 @@ export default async function HomePage() {
                   <Card className="h-full overflow-hidden border-border/60 transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-2xl">
                     {project.cover_image_url ? (
                       <div className="relative aspect-video overflow-hidden bg-muted">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={project.cover_image_url}
                           alt={project.title}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                       </div>
@@ -258,12 +260,13 @@ export default async function HomePage() {
                 <Card className="h-full border-border/60 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg">
                   <CardContent className="flex items-start gap-5 p-6 sm:p-8">
                     {member.avatar_url ? (
-                      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-full ring-2 ring-primary/20 bg-muted">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                      <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-full ring-2 ring-primary/20 bg-muted">
+                        <Image
                           src={member.avatar_url}
                           alt={member.full_name}
-                          className="h-full w-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="64px"
                         />
                       </div>
                     ) : (

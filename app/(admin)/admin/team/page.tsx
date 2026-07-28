@@ -107,8 +107,9 @@ export default function AdminTeamPage() {
     if (!file) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file (JPG, PNG, WebP, etc.)');
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Only JPG, PNG, and WebP images are supported');
       return;
     }
 
@@ -121,7 +122,7 @@ export default function AdminTeamPage() {
     setUploading(true);
     try {
       const ext = file.name.split('.').pop() || 'jpg';
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const fileName = `team/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from('member-avatars')

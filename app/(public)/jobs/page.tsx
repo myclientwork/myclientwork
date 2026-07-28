@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
-import { AuthGuard } from '@/features/auth/components/auth-guard';
 import type { JobPosting } from '@/lib/types';
 
 const EXPERIENCE_LABELS: Record<string, string> = {
@@ -168,9 +167,5 @@ function JobsContent() {
 }
 
 export default function JobsPage() {
-  return (
-    <AuthGuard>
-      <JobsContent />
-    </AuthGuard>
-  );
+  return <JobsContent />;
 }

@@ -55,7 +55,7 @@ export function ProductPurchase({ product }: { product: Product }) {
         .select()
         .single();
       if (error) throw error;
-      toast.success('Order created! Complete payment to get access.');
+      toast.info('Order initialized. Please contact support or complete processing to access digital downloads.');
       setExistingOrder(data as Order);
     } catch {
       toast.error('Failed to create order');

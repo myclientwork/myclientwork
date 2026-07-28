@@ -67,7 +67,7 @@ export default function ProfilePage() {
 
     try {
       const ext = selectedFile.name.split('.').pop() || 'jpg';
-      const fileName = `user-${user.id}-${Date.now()}.${ext}`;
+      const fileName = `${user.id}/avatar-${Date.now()}.${ext}`;
 
       setUploadProgress(30);
 

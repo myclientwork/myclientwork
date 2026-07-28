@@ -10,7 +10,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 import { ApplyForm } from '@/features/jobs/components/apply-form';
-import { AuthGuard } from '@/features/auth/components/auth-guard';
 import type { JobPosting } from '@/lib/types';
 
 export const revalidate = 0;
@@ -72,7 +71,7 @@ export default async function JobDetailPage({ params }: Props) {
   if (!job) notFound();
 
   return (
-    <AuthGuard>
+    <>
       <section className="border-b border-border/60 bg-secondary/30">
         <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
           <Link
@@ -155,6 +154,6 @@ export default async function JobDetailPage({ params }: Props) {
           </div>
         </div>
       </section>
-    </AuthGuard>
+    </>
   );
 }

@@ -41,9 +41,19 @@ export default function AdminOverviewPage() {
 
   useEffect(() => {
     async function load() {
-      const [jobsRes, usersRes, messagesRes, projectsRes, appsRes, productsRes, ordersRes] = await Promise.all([
+      const [
+        jobsCountRes, jobsRecentRes,
+        usersRes,
+        messagesCountRes, messagesRecentRes,
+        projectsRes, appsRes, productsRes,
+        ordersRes,
+      ] = await Promise.all([
+        // Accurate total counts
+        supabase.from('job_requests').select('*', { count: 'exact', head: true }),
+        // Limited lists for display
         supabase.from('job_requests').select('id, title, name, service_type, created_at, status').order('created_at', { ascending: false }).limit(5),
         supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('contact_messages').select('*', { count: 'exact', head: true }),
         supabase.from('contact_messages').select('id, subject, name, email, body, created_at').order('created_at', { ascending: false }).limit(5),
         supabase.from('projects').select('*', { count: 'exact', head: true }),
         supabase.from('job_applications').select('*', { count: 'exact', head: true }),
@@ -51,14 +61,16 @@ export default function AdminOverviewPage() {
         supabase.from('orders').select('amount_cents, status'),
       ]);
 
-      const jobs = (jobsRes.data as JobRequest[]) ?? [];
-      const messages = (messagesRes.data as ContactMessage[]) ?? [];
+      const jobs = (jobsRecentRes.data as JobRequest[]) ?? [];
+      const messages = (messagesRecentRes.data as ContactMessage[]) ?? [];
       const allOrders = (ordersRes.data as { amount_cents: number; status: string }[]) ?? [];
+      const totalJobs = jobsCountRes.count ?? 0;
+      const totalMessages = messagesCountRes.count ?? 0;
 
       setStats({
-        jobs: jobsRes.data?.length || 0,
+        jobs: totalJobs,
         users: usersRes.count || 0,
-        messages: messagesRes.data?.length || 0,
+        messages: totalMessages,
         projects: projectsRes.count || 0,
         applications: appsRes.count || 0,
         pendingJobs: jobs.filter((j) => !['COMPLETED', 'CANCELLED', 'REJECTED'].includes(j.status)).length,
@@ -73,6 +85,7 @@ export default function AdminOverviewPage() {
     }
     load();
   }, []);
+
 
   const cards = [
     { label: 'Client Requirements', value: stats.jobs, icon: Briefcase, color: 'text-primary', href: '/admin/jobs' },

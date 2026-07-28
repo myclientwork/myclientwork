@@ -6,12 +6,35 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '**.supabase.co',
-        pathname: '/storage/v1/object/public/**',
       },
       // Google user profile pictures (OAuth)
       {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
+      },
+      // Pexels stock images
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+      },
+      // Unsplash stock images
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      // GitHub avatars and user content
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+      },
+      // Wildcard HTTPS for user-submitted image URLs
+      {
+        protocol: 'https',
+        hostname: '**',
       },
     ],
   },

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -189,6 +190,38 @@ export function JobForm() {
       setLoading(false);
     }
   };
+
+  // Protect the form — show sign-in prompt if not authenticated
+  if (!loading && !user) {
+    return (
+      <div className="mx-auto max-w-2xl text-center py-16">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Briefcase className="h-8 w-8" />
+        </div>
+        <h2 className="mt-6 text-2xl font-bold">Sign in to post a requirement</h2>
+        <p className="mt-3 text-muted-foreground">
+          You need an account to submit your project requirement. It only takes a minute to create one.
+        </p>
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Button asChild>
+            <Link href="/auth/login">Sign In</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/auth/register">Create Account</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Still resolving auth state
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-2xl py-16 flex justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (submitted) {
     return (

@@ -32,17 +32,17 @@ export default function AuthCallbackPage() {
           user.email?.split('@')[0] ||
           'User';
 
-        await supabase.from('user_profiles').insert({
+        await supabase.from('user_profiles').upsert({
           id: user.id,
           email: user.email!,
           full_name: fullName,
-        });
+        }, { onConflict: 'id', ignoreDuplicates: true });
 
-        router.push('/homepage');
+        router.push('/dashboard');
         return;
       }
 
-      router.push(profileData.role === 'admin' ? '/admin' : '/homepage');
+      router.push(profileData.role === 'admin' ? '/admin' : '/dashboard');
     });
   }, [router]);
 

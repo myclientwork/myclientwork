@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
 import type { Member } from '@/lib/types';
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 async function getMembers() {
   const { data } = await supabase

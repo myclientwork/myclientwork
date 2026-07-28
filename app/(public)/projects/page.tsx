@@ -1,11 +1,12 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
 import type { Project } from '@/lib/types';
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 export const metadata = {
   title: 'Projects',
@@ -27,12 +28,13 @@ function ProjectCard({ project }: { project: Project }) {
     <Link href={`/projects/${project.slug}`} className="group">
       <Card className="h-full overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1">
         {project.cover_image_url && (
-          <div className="aspect-video overflow-hidden bg-muted">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+          <div className="relative aspect-video overflow-hidden bg-muted">
+            <Image
               src={project.cover_image_url}
               alt={project.title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </div>
         )}

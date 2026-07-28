@@ -10,7 +10,7 @@ import { Toaster } from 'sonner';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://myclientwork.com'),
+  metadataBase: new URL('https://www.myclientwork.online'),
   title: {
     default: 'MyClientWork — Digital Services. Professional Solutions. Growth.',
     template: '%s | MyClientWork',
