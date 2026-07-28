@@ -5,6 +5,7 @@ import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { ArrowLeft, User, Mail, Phone, Building2, Globe, DollarSign, Calendar } from 'lucide-react';
+import { AdminBackLink } from '@/shared/components/layout/admin-back-link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -19,18 +20,10 @@ import { supabase } from '@/lib/supabase';
 import type { JobRequest } from '@/lib/types';
 
 const JOB_STATUSES = [
-  'SUBMITTED',
   'UNDER_REVIEW',
-  'CLARIFICATION_REQUIRED',
-  'QUALIFIED',
-  'QUOTE_SENT',
   'ACCEPTED',
   'IN_PROGRESS',
-  'CLIENT_REVIEW',
   'COMPLETED',
-  'REJECTED',
-  'CANCELLED',
-  'ON_HOLD',
 ];
 
 export default function AdminJobDetailPage() {
@@ -54,17 +47,41 @@ export default function AdminJobDetailPage() {
   }, [id]);
 
   async function updateStatus(newStatus: string) {
-    if (!job) return;
+    if (!job || job.status === newStatus) return;
     setUpdating(true);
+    const previousStatus = job.status;
+    setJob({ ...job, status: newStatus });
+
     try {
       const { error } = await supabase
         .from('job_requests')
         .update({ status: newStatus, updated_at: new Date().toISOString() })
         .eq('id', job.id);
       if (error) throw error;
-      setJob({ ...job, status: newStatus });
-      toast.success(`Status updated to ${newStatus.replace(/_/g, ' ')}`);
+
+      const emailRes = await fetch('/api/admin/job-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobId: job.id,
+          status: newStatus,
+          clientEmail: job.email,
+          clientName: job.name,
+          jobTitle: job.title,
+        }),
+      });
+
+      const emailResult = await emailRes.json();
+      toast.success(
+        `Status updated to "${newStatus.replace(/_/g, ' ')}"`,
+        {
+          description: emailResult?.emailSent
+            ? `Client notification email sent via Nodemailer to ${job.email}`
+            : `Status updated in database`,
+        }
+      );
     } catch {
+      setJob({ ...job, status: previousStatus });
       toast.error('Failed to update status');
     } finally {
       setUpdating(false);
@@ -78,10 +95,7 @@ export default function AdminJobDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Link href="/admin/jobs" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Back to jobs
-      </Link>
+      <AdminBackLink />
 
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -102,7 +116,7 @@ export default function AdminJobDetailPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {JOB_STATUSES.map((s) => (
+              {Array.from(new Set([job.status, ...JOB_STATUSES])).map((s) => (
                 <SelectItem key={s} value={s}>{s.replace(/_/g, ' ')}</SelectItem>
               ))}
             </SelectContent>

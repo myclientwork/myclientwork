@@ -40,9 +40,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SettingsProvider>
             <AuthProvider>
-              <SiteHeader />
-              <main className="flex-1">{children}</main>
-              <SiteFooter />
+              {children}
             </AuthProvider>
             <Toaster position="top-right" richColors duration={1500} />
           </SettingsProvider>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { AdminGuard } from '@/features/auth/components/admin-guard';
+import { AdminHeader } from '@/shared/components/layout/admin-header';
 import { AdminNav } from '@/shared/components/layout/admin-nav';
 import { Button } from '@/components/ui/button';
 import { Shield } from 'lucide-react';
@@ -21,8 +22,11 @@ export default function AdminLayout({
 
   return (
     <AdminGuard>
-      <div className="min-h-[calc(100vh-4rem)] bg-muted/30">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex flex-col bg-muted/20">
+        {/* Isolated Dedicated Admin Header */}
+        <AdminHeader />
+
+        <div className="flex-1 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           
           {/* Mobile/Tablet Admin Menu Bar */}
           <div className="lg:hidden flex items-center justify-between p-3 bg-card border border-border/80 rounded-xl mb-4 shadow-sm">
@@ -37,7 +41,7 @@ export default function AdminLayout({
 
           {/* Collapsible Admin Navigation for mobile/tablet */}
           {adminOpen && (
-            <div className="lg:hidden border border-border/80 bg-card rounded-xl p-2 mb-4 animate-fade-in">
+            <div className="lg:hidden border border-border/80 bg-card rounded-xl p-2 mb-4 animate-fade-in shadow-sm">
               <AdminNav />
             </div>
           )}
@@ -48,7 +52,7 @@ export default function AdminLayout({
                 <AdminNav />
               </div>
             </aside>
-            <div className="min-w-0">{children}</div>
+            <main className="min-w-0">{children}</main>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Briefcase, Search, Plus } from 'lucide-react';
+import { UserBackLink } from '@/shared/components/layout/user-back-link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -48,6 +49,7 @@ export default function MyJobsPage() {
 
   return (
     <div className="space-y-6">
+      <UserBackLink />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">My Requirements</h1>

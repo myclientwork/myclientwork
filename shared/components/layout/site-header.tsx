@@ -232,33 +232,32 @@ export function SiteHeader() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 
-                {/* User Dropdown Links */}
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/dashboard" className="flex items-center gap-2 font-medium">
-                    <LayoutDashboard className="h-4 w-4 text-primary" />
-                    Dashboard
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/dashboard/profile" className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-primary" />
-                    My Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/dashboard/jobs" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4 text-primary" />
-                    Settings & Requirements
-                  </Link>
-                </DropdownMenuItem>
-                
-                {isAdmin && (
+                {/* Dropdown Links based on Role */}
+                {isAdmin ? (
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/admin" className="flex items-center gap-2 text-primary font-semibold">
+                      <Shield className="h-4 w-4" />
+                      Admin Control Panel
+                    </Link>
+                  </DropdownMenuItem>
+                ) : (
                   <>
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link href="/admin" className="flex items-center gap-2 text-primary font-semibold">
-                        <Shield className="h-4 w-4" />
-                        Admin Control Panel
+                      <Link href="/dashboard" className="flex items-center gap-2 font-medium">
+                        <LayoutDashboard className="h-4 w-4 text-primary" />
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link href="/dashboard/profile" className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-primary" />
+                        My Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link href="/dashboard/jobs" className="flex items-center gap-2">
+                        <Settings className="h-4 w-4 text-primary" />
+                        My Requirements
                       </Link>
                     </DropdownMenuItem>
                   </>

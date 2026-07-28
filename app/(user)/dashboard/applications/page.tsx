@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Briefcase, Loader2 } from 'lucide-react';
+import { UserBackLink } from '@/shared/components/layout/user-back-link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -47,6 +48,7 @@ export default function MyApplicationsPage() {
 
   return (
     <div className="space-y-6">
+      <UserBackLink />
       <div>
         <h1 className="text-2xl font-bold tracking-tight">My Applications</h1>
         <p className="mt-1 text-muted-foreground">

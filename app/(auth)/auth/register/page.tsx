@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Image from 'next/image';
-import { Loader2, Check, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Check, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getAuthCallbackUrl } from '@/shared/config/supabase';
 import { useAuth } from '@/lib/auth-context';
@@ -165,8 +165,16 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        <Link
+          href="/"
+          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Go to Home
+        </Link>
+        <Card className="w-full">
         <CardHeader className="text-center">
           <Link href="/" className="mx-auto mb-3 flex items-center justify-center gap-2.5 group w-fit">
             <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full ring-2 ring-primary/30 transition-transform group-hover:scale-105">
@@ -329,5 +337,6 @@ export default function RegisterPage() {
         </CardContent>
       </Card>
     </div>
+  </div>
   );
 }

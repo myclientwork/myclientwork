@@ -11,14 +11,38 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     let isMounted = true;
 
-    function completeSignIn() {
+    async function completeSignIn(userId?: string) {
       if (handledRef.current) return;
       handledRef.current = true;
 
       toast.success('Signed in successfully!');
-      if (isMounted) {
-        window.location.replace('/');
+      if (!isMounted) return;
+
+      let targetUrl = '/';
+      if (userId) {
+        // Retry fetching profile up to 3 times to handle DB RLS / network latency
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            const { data: profile } = await supabase
+              .from('user_profiles')
+              .select('role')
+              .eq('id', userId)
+              .maybeSingle();
+
+            if (profile?.role) {
+              if (profile.role === 'admin') {
+                targetUrl = '/admin';
+              }
+              break;
+            }
+          } catch (e) {
+            console.warn('Role fetch error on callback:', e);
+          }
+          await new Promise((r) => setTimeout(r, 250));
+        }
       }
+
+      window.location.replace(targetUrl);
     }
 
     async function processCallback() {
@@ -56,7 +80,7 @@ export default function AuthCallbackPage() {
         try {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           if (data?.session?.user) {
-            completeSignIn();
+            completeSignIn(data.session.user.id);
             return;
           }
           if (error) {
@@ -70,7 +94,7 @@ export default function AuthCallbackPage() {
       // 3. Check if session already exists (e.g. detectSessionInUrl or existing session)
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        completeSignIn();
+        completeSignIn(session.user.id);
         return;
       }
 
@@ -80,7 +104,7 @@ export default function AuthCallbackPage() {
         await new Promise((r) => setTimeout(r, 200));
         const { data: { session: polledSession } } = await supabase.auth.getSession();
         if (polledSession?.user) {
-          completeSignIn();
+          completeSignIn(polledSession.user.id);
           return;
         }
       }
