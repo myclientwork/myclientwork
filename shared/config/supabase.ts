@@ -46,3 +46,26 @@ export function getAuthCallbackUrl(): string {
   return 'https://www.myclientwork.online/auth/callback';
 }
 
+/**
+ * Returns the canonical reset password URL dynamically.
+ */
+export function getAuthResetPasswordUrl(): string {
+  if (typeof window !== 'undefined' && window.location.origin) {
+    return `${window.location.origin.replace(/\/+$/, '')}/reset-password`;
+  }
+
+  let siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_VERCEL_URL;
+
+  if (siteUrl) {
+    if (!siteUrl.startsWith('http://') && !siteUrl.startsWith('https://')) {
+      siteUrl = `https://${siteUrl}`;
+    }
+    return `${siteUrl.replace(/\/+$/, '')}/reset-password`;
+  }
+
+  return 'https://www.myclientwork.online/reset-password';
+}
+
