@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { JobForm } from '@/features/jobs/components/job-form';
+import { LazyJobForm } from '@/features/jobs/components/lazy-job-form';
 
 export const metadata = {
   title: 'Post Project Requirement',
@@ -35,7 +35,7 @@ export default function PostRequirementPage() {
 
       <section className="py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <JobForm />
+          <LazyJobForm />
         </div>
       </section>
     </>

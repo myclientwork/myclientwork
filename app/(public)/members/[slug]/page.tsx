@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
@@ -21,7 +22,7 @@ import type { Member, ProjectWithMembers } from '@/lib/types';
 
 export const revalidate = 60;
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
   try {
@@ -35,10 +36,11 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props) {
+  const { slug } = await params;
   const { data: member } = await supabase
     .from('members')
     .select('full_name, title, bio')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .maybeSingle();
 
   if (!member) return { title: 'Member Not Found' };
@@ -69,7 +71,8 @@ async function getMemberProjects(memberId: string) {
 }
 
 export default async function MemberProfilePage({ params }: Props) {
-  const member = await getMember(params.slug);
+  const { slug } = await params;
+  const member = await getMember(slug);
   if (!member) notFound();
 
   const projects = await getMemberProjects(member.id);
@@ -88,12 +91,14 @@ export default async function MemberProfilePage({ params }: Props) {
           </Link>
           <div className="mt-6 flex flex-col items-start gap-6 sm:flex-row">
             {member.avatar_url ? (
-              <div className="h-28 w-28 flex-shrink-0 overflow-hidden rounded-2xl bg-muted shadow-md ring-2 ring-primary/20">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+              <div className="relative h-28 w-28 flex-shrink-0 overflow-hidden rounded-2xl bg-muted shadow-md ring-2 ring-primary/20">
+                <Image
                   src={member.avatar_url}
                   alt={member.full_name}
-                  className="h-full w-full object-cover"
+                  fill
+                  priority
+                  sizes="112px"
+                  className="object-cover"
                 />
               </div>
             ) : (
@@ -205,12 +210,13 @@ export default async function MemberProfilePage({ params }: Props) {
                           <Card className="transition-all hover:shadow-md">
                             <CardContent className="flex items-start gap-4 p-4">
                               {project.cover_image_url && (
-                                <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img
+                                <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
+                                  <Image
                                     src={project.cover_image_url}
                                     alt={project.title}
-                                    className="h-full w-full object-cover"
+                                    fill
+                                    sizes="64px"
+                                    className="object-cover"
                                   />
                                 </div>
                               )}

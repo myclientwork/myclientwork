@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  swcMinify: true,
   compress: true,
   reactStrictMode: true,
   experimental: {
@@ -37,11 +36,6 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'raw.githubusercontent.com',
-      },
-      // Wildcard HTTPS for user-submitted image URLs
-      {
-        protocol: 'https',
-        hostname: '**',
       },
     ],
   },

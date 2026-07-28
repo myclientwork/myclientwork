@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Search,
   Users,
@@ -15,8 +15,6 @@ import {
   CheckCircle,
   KeyRound,
   Eye,
-  ChevronLeft,
-  ChevronRight,
   User,
   History,
 } from 'lucide-react';
@@ -45,11 +43,20 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import type { UserProfile, UserActivityLog } from '@/lib/types';
 import Image from 'next/image';
+import { Skeleton } from '@/components/ui/skeleton';
+import { DataPagination } from '@/components/data-pagination';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
 const ROLES = [
   { value: 'user', label: 'User' },
   { value: 'admin', label: 'Admin' },
 ];
+
+const PAGE_SIZE = 10;
+
+function sanitizeSearchTerm(value: string) {
+  return value.trim().replace(/[%_,().]/g, ' ');
+}
 
 export default function AdminUsersPage() {
   const { user: currentUser } = useAuth();
@@ -59,7 +66,9 @@ export default function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [totalCount, setTotalCount] = useState(0);
+  const [adminCount, setAdminCount] = useState(0);
+  const debouncedSearch = useDebouncedValue(search);
 
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
@@ -90,26 +99,49 @@ export default function AdminUsersPage() {
     status: 'active' as 'active' | 'suspended',
   });
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  async function loadUsers() {
+  const loadUsers = useCallback(async () => {
+    setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const from = (currentPage - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const normalizedSearch = sanitizeSearchTerm(debouncedSearch);
 
-      if (error) throw error;
-      setUsers((data as UserProfile[]) ?? []);
+      let query = supabase
+        .from('user_profiles')
+        .select('*', { count: 'exact' });
+
+      if (roleFilter !== 'ALL') query = query.eq('role', roleFilter);
+      if (statusFilter !== 'ALL') query = query.eq('status', statusFilter);
+      if (normalizedSearch) {
+        query = query.or(
+          `full_name.ilike.%${normalizedSearch}%,email.ilike.%${normalizedSearch}%,company.ilike.%${normalizedSearch}%`
+        );
+      }
+
+      const [usersResult, adminsResult] = await Promise.all([
+        query.order('created_at', { ascending: false }).range(from, to),
+        supabase
+          .from('user_profiles')
+          .select('id', { count: 'exact', head: true })
+          .eq('role', 'admin'),
+      ]);
+
+      if (usersResult.error) throw usersResult.error;
+      if (adminsResult.error) throw adminsResult.error;
+      setUsers((usersResult.data as UserProfile[]) ?? []);
+      setTotalCount(usersResult.count ?? 0);
+      setAdminCount(adminsResult.count ?? 0);
     } catch (err) {
       console.error('Error loading users:', err);
       toast.error('Failed to load users.');
     } finally {
       setLoading(false);
     }
-  }
+  }, [currentPage, debouncedSearch, roleFilter, statusFilter]);
+
+  useEffect(() => {
+    void loadUsers();
+  }, [loadUsers]);
 
   // Handle Create User
   async function handleCreateUser(e: React.FormEvent) {
@@ -121,28 +153,13 @@ export default function AdminUsersPage() {
 
     setActionLoadingId('create');
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: createForm.email,
-        password: createForm.password,
-        options: {
-          data: {
-            full_name: createForm.full_name,
-          },
-        },
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(createForm),
       });
-
-      if (authError) throw authError;
-
-      const newUserId = authData.user?.id;
-      if (newUserId) {
-        await supabase.from('user_profiles').upsert({
-          id: newUserId,
-          email: createForm.email,
-          full_name: createForm.full_name || null,
-          role: createForm.role,
-          status: 'active',
-        });
-      }
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to create user.');
 
       toast.success(`User ${createForm.email} created successfully!`);
       setCreateDialogOpen(false);
@@ -173,7 +190,6 @@ export default function AdminUsersPage() {
     e.preventDefault();
     if (!editingUser) return;
 
-    const adminCount = users.filter((u) => u.role === 'admin').length;
     if (editingUser.role === 'admin' && editForm.role === 'user' && adminCount <= 1) {
       toast.error('Cannot demote the last Admin account.');
       return;
@@ -181,30 +197,21 @@ export default function AdminUsersPage() {
 
     setActionLoadingId(editingUser.id);
     try {
-      // Base payload with standard columns that exist in user_profiles
-      const basePayload: Record<string, any> = {
-        full_name: editForm.full_name || null,
-        phone: editForm.phone || null,
-        company: editForm.company || null,
-        country: editForm.country || null,
-        role: editForm.role,
-        updated_at: new Date().toISOString(),
-      };
-
-      const { error: baseError } = await supabase
-        .from('user_profiles')
-        .update(basePayload)
-        .eq('id', editingUser.id);
-
-      if (baseError) throw baseError;
-
-      // Try updating status separately if column exists
-      if (editForm.status) {
-        await supabase
-          .from('user_profiles')
-          .update({ status: editForm.status })
-          .eq('id', editingUser.id);
-      }
+      const response = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingUser.id,
+          full_name: editForm.full_name || null,
+          phone: editForm.phone || null,
+          company: editForm.company || null,
+          country: editForm.country || null,
+          role: editForm.role,
+          status: editForm.status,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to update user.');
 
       toast.success(`Updated profile for ${editingUser.email}`);
       setEditingUser(null);
@@ -220,8 +227,6 @@ export default function AdminUsersPage() {
   // Handle Quick Role Toggle (Make Admin / Remove Admin)
   async function toggleRole(targetUser: UserProfile) {
     const newRole: 'user' | 'admin' = targetUser.role === 'admin' ? 'user' : 'admin';
-    const adminCount = users.filter((u) => u.role === 'admin').length;
-
     if (targetUser.role === 'admin' && newRole === 'user' && adminCount <= 1) {
       toast.error('Cannot remove the last Admin account.');
       return;
@@ -235,7 +240,7 @@ export default function AdminUsersPage() {
       });
       if (error) throw error;
 
-      setUsers(users.map((u) => (u.id === targetUser.id ? { ...u, role: newRole } : u)));
+      await loadUsers();
       toast.success(
         newRole === 'admin'
           ? `${targetUser.full_name || targetUser.email} is now an admin.`
@@ -261,12 +266,21 @@ export default function AdminUsersPage() {
     setActionLoadingId(u.id);
 
     try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', u.id);
-
-      if (error) throw error;
+      const response = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: u.id,
+          full_name: u.full_name,
+          phone: u.phone,
+          company: u.company,
+          country: u.country,
+          role: u.role,
+          status: newStatus,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to update user status.');
 
       toast.success(
         newStatus === 'suspended'
@@ -291,7 +305,6 @@ export default function AdminUsersPage() {
       return;
     }
 
-    const adminCount = users.filter((u) => u.role === 'admin').length;
     if (deletingUser.role === 'admin' && adminCount <= 1) {
       toast.error('Cannot delete the last Admin account.');
       return;
@@ -299,12 +312,21 @@ export default function AdminUsersPage() {
 
     setActionLoadingId(deletingUser.id);
     try {
-      const { error } = await supabase.from('user_profiles').delete().eq('id', deletingUser.id);
-      if (error) throw error;
+      const response = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: deletingUser.id }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to delete user.');
 
       toast.success(`User ${deletingUser.email} deleted.`);
       setDeletingUser(null);
-      await loadUsers();
+      if (users.length === 1 && currentPage > 1) {
+        setCurrentPage((page) => page - 1);
+      } else {
+        await loadUsers();
+      }
     } catch (err) {
       console.error('Error deleting user:', err);
       toast.error('Failed to delete user.');
@@ -349,24 +371,6 @@ export default function AdminUsersPage() {
     }
   }
 
-  // Filter & Pagination Logic
-  const filtered = users.filter((u) => {
-    const searchLower = search.toLowerCase();
-    const matchesSearch =
-      u.full_name?.toLowerCase().includes(searchLower) ||
-      u.email.toLowerCase().includes(searchLower) ||
-      u.company?.toLowerCase().includes(searchLower);
-
-    const matchesRole = roleFilter === 'ALL' || u.role === roleFilter;
-    const matchesStatus = statusFilter === 'ALL' || (u.status ?? 'active') === statusFilter;
-
-    return matchesSearch && matchesRole && matchesStatus;
-  });
-
-  const totalPages = Math.ceil(filtered.length / pageSize) || 1;
-  const paginatedUsers = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const adminCount = users.filter((u) => u.role === 'admin').length;
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -375,7 +379,7 @@ export default function AdminUsersPage() {
           <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             View registered users, manage admin privileges, reset passwords, and audit account states.{' '}
-            <span className="font-semibold text-foreground">{users.length} Total Users</span> ({adminCount} Admins).
+            <span className="font-semibold text-foreground">{totalCount} Matching Users</span> ({adminCount} Admins overall).
           </p>
         </div>
         <Button onClick={() => setCreateDialogOpen(true)} className="w-full sm:w-auto">
@@ -434,11 +438,12 @@ export default function AdminUsersPage() {
 
       {/* User List */}
       {loading ? (
-        <Card className="p-8 text-center text-muted-foreground">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-          <p className="mt-2 text-sm">Loading users...</p>
-        </Card>
-      ) : paginatedUsers.length === 0 ? (
+        <div className="space-y-3" aria-label="Loading users">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton key={index} className="h-[76px] rounded-xl" />
+          ))}
+        </div>
+      ) : users.length === 0 ? (
         <Card className="p-12 text-center">
           <Users className="mx-auto h-12 w-12 text-muted-foreground" />
           <p className="mt-4 font-semibold text-foreground">No users match your criteria.</p>
@@ -446,7 +451,7 @@ export default function AdminUsersPage() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {paginatedUsers.map((u) => {
+          {users.map((u) => {
             const isSelf = u.id === currentUser?.id;
             const isAdmin = u.role === 'admin';
             const isSuspended = u.status === 'suspended';
@@ -569,32 +574,12 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-2">
-          <p className="text-xs text-muted-foreground">
-            Showing Page {currentPage} of {totalPages} ({filtered.length} matching)
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" /> Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-            >
-              Next <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <DataPagination
+        page={currentPage}
+        pageSize={PAGE_SIZE}
+        total={totalCount}
+        onPageChange={setCurrentPage}
+      />
 
       {/* ── Dialog 1: Create User ── */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>

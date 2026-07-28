@@ -1,25 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import { getSupabasePublicConfig } from '@/shared/config/supabase-env';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+const { url, key } = getSupabasePublicConfig();
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  if (typeof window !== 'undefined') {
-    console.warn(
-      'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.'
-    );
-  }
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    storageKey: 'myclientwork-auth-token',
-    flowType: 'pkce',
-  },
-});
+// Server Components use a non-persistent anonymous client. Browser code uses
+// Supabase's SSR client so auth cookies are available to middleware and layouts.
+export const supabase =
+  typeof window === 'undefined'
+    ? createClient(url, key, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      })
+    : createBrowserClient(url, key);
 
 /**
  * Returns the canonical authentication callback URL dynamically.
@@ -68,4 +60,3 @@ export function getAuthResetPasswordUrl(): string {
 
   return 'https://www.myclientwork.online/reset-password';
 }
-

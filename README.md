@@ -38,7 +38,7 @@ Built with Next.js 13 (App Router), TypeScript, Tailwind CSS, shadcn/ui, and Sup
 
 ### Prerequisites
 
-- **Node.js**: v18.x or higher
+- **Node.js**: v22.x or higher
 - **npm** or **yarn** / **pnpm**
 - **Supabase Project**: A running Supabase instance with database migrations applied.
 

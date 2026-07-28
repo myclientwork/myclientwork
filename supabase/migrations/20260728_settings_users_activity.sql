@@ -20,9 +20,7 @@
 -- ============================================================
 -- 1. site_settings table
 -- ============================================================
-DROP TABLE IF EXISTS site_settings CASCADE;
-
-CREATE TABLE site_settings (
+CREATE TABLE IF NOT EXISTS site_settings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   key text UNIQUE NOT NULL,
   value text,
@@ -41,8 +39,8 @@ CREATE POLICY "public_read_settings" ON site_settings FOR SELECT
 DROP POLICY IF EXISTS "admin_manage_settings" ON site_settings;
 CREATE POLICY "admin_manage_settings" ON site_settings FOR ALL
   TO authenticated
-  USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin')))
-  WITH CHECK (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin')));
+  USING (public.get_my_role() IN ('admin', 'super_admin'))
+  WITH CHECK (public.get_my_role() IN ('admin', 'super_admin'));
 
 -- Seed default settings
 INSERT INTO site_settings (key, value) VALUES
@@ -96,7 +94,7 @@ ALTER TABLE user_activity_log ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "admin_read_activity" ON user_activity_log;
 CREATE POLICY "admin_read_activity" ON user_activity_log FOR SELECT
   TO authenticated
-  USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin')));
+  USING (public.get_my_role() IN ('admin', 'super_admin'));
 
 -- Authenticated users can insert their own activity
 DROP POLICY IF EXISTS "user_insert_own_activity" ON user_activity_log;
@@ -133,7 +131,7 @@ ALTER TABLE user_profiles ADD CONSTRAINT user_profiles_status_check
 DROP POLICY IF EXISTS "admin_delete_profiles" ON user_profiles;
 CREATE POLICY "admin_delete_profiles" ON user_profiles FOR DELETE
   TO authenticated
-  USING (EXISTS (SELECT 1 FROM user_profiles up WHERE up.id = auth.uid() AND up.role IN ('admin', 'super_admin')));
+  USING (public.get_my_role() IN ('admin', 'super_admin'));
 
 -- ============================================================
 -- 4. Storage bucket for site assets
@@ -148,7 +146,7 @@ CREATE POLICY "admin_upload_site_assets" ON storage.objects FOR INSERT
   TO authenticated
   WITH CHECK (
     bucket_id = 'site-assets' AND
-    EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
+    public.get_my_role() IN ('admin', 'super_admin')
   );
 
 DROP POLICY IF EXISTS "admin_update_site_assets" ON storage.objects;
@@ -156,7 +154,7 @@ CREATE POLICY "admin_update_site_assets" ON storage.objects FOR UPDATE
   TO authenticated
   USING (
     bucket_id = 'site-assets' AND
-    EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
+    public.get_my_role() IN ('admin', 'super_admin')
   );
 
 DROP POLICY IF EXISTS "admin_delete_site_assets" ON storage.objects;
@@ -164,7 +162,7 @@ CREATE POLICY "admin_delete_site_assets" ON storage.objects FOR DELETE
   TO authenticated
   USING (
     bucket_id = 'site-assets' AND
-    EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
+    public.get_my_role() IN ('admin', 'super_admin')
   );
 
 -- Public read for site-assets

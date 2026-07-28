@@ -67,11 +67,24 @@ function cleanOAuthParams() {
   }
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+type AuthProviderProps = {
+  children: ReactNode;
+  initialUser?: User | null;
+  initialProfile?: UserProfile | null;
+};
+
+export function AuthProvider({
+  children,
+  initialUser,
+  initialProfile,
+}: AuthProviderProps) {
+  const hasInitialAuth = initialUser !== undefined;
+  const [user, setUser] = useState<User | null>(initialUser ?? null);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<UserProfile | null>(
+    initialProfile ?? null
+  );
+  const [loading, setLoading] = useState(!hasInitialAuth);
 
   const profileCache = useRef<{ [id: string]: UserProfile | null }>({});
 
@@ -158,27 +171,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async function initAuth() {
       try {
         cleanOAuthParams();
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        const {
+          data: { session: initialSession },
+        } = await supabase.auth.getSession();
         if (!isMounted) return;
-        setSession(initialSession);
-        const initialUser = initialSession?.user ?? null;
-        setUser(initialUser);
-        setLoading(false);
 
-        if (initialUser) {
-          loadProfile(initialUser).catch((e) => {
-            console.warn('Error loading initial profile:', e);
-          });
+        const sessionUser = initialSession?.user ?? null;
+        setSession(initialSession);
+        setUser(sessionUser);
+
+        if (
+          sessionUser &&
+          (!initialProfile || initialProfile.id !== sessionUser.id)
+        ) {
+          await loadProfile(sessionUser);
         }
       } catch (err) {
         console.error('Error fetching initial session:', err);
-        if (isMounted) setLoading(false);
       } finally {
+        if (isMounted) setLoading(false);
         cleanOAuthParams();
       }
     }
 
-    initAuth();
+    void initAuth();
 
     const {
       data: { subscription },
@@ -200,11 +216,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
 
       if (newUser) {
-        loadProfile(newUser).catch((e) => {
+        void loadProfile(newUser).catch((e) => {
           console.warn('Error loading profile on auth change:', e);
         });
       } else {
         setProfile(null);
+        setLoading(false);
       }
       cleanOAuthParams();
     });
@@ -213,7 +230,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [loadProfile]);
+  }, [initialProfile, loadProfile]);
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();

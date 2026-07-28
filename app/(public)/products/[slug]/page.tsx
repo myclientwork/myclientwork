@@ -1,14 +1,15 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Package, Check, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
-import { ProductPurchase } from '@/features/products/components/product-purchase';
+import { LazyProductPurchase } from '@/features/products/components/lazy-product-purchase';
 import type { Product } from '@/lib/types';
 
 export const revalidate = 60;
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
   try {
@@ -23,10 +24,11 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props) {
+  const { slug } = await params;
   const { data: product } = await supabase
     .from('products')
     .select('name, description')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .maybeSingle();
 
   if (!product) return { title: 'Product Not Found' };
@@ -47,7 +49,8 @@ async function getProduct(slug: string) {
 }
 
 export default async function ProductDetailPage({ params }: Props) {
-  const product = await getProduct(params.slug);
+  const { slug } = await params;
+  const product = await getProduct(slug);
   if (!product) return notFound();
 
   return (
@@ -62,9 +65,15 @@ export default async function ProductDetailPage({ params }: Props) {
       <div className="grid gap-8 md:grid-cols-2">
         <div>
           {product.image_url ? (
-            <div className="aspect-square w-full overflow-hidden rounded-xl bg-muted">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+            <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-muted">
+              <Image
+                src={product.image_url}
+                alt={product.name}
+                fill
+                priority
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
             </div>
           ) : (
             <div className="flex aspect-square w-full items-center justify-center rounded-xl bg-secondary">
@@ -93,7 +102,7 @@ export default async function ProductDetailPage({ params }: Props) {
           )}
 
           {/* Interactive checkout action */}
-          <ProductPurchase product={product} />
+          <LazyProductPurchase product={product} />
         </div>
       </div>
     </div>

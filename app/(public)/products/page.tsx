@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Package, Check, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,11 +43,16 @@ export default async function ProductsPage() {
       ) : (
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
-            <Card key={product.id} className="flex flex-col overflow-hidden transition-all hover:shadow-lg">
+            <Card key={product.id} className="group flex flex-col overflow-hidden transition-all hover:shadow-lg">
               {product.image_url ? (
-                <div className="aspect-video w-full overflow-hidden bg-muted">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+                <div className="relative aspect-video w-full overflow-hidden bg-muted">
+                  <Image
+                    src={product.image_url}
+                    alt={product.name}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
                 </div>
               ) : (
                 <div className="flex aspect-video w-full items-center justify-center bg-secondary">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, FolderKanban, Lock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -198,9 +199,14 @@ export default function AdminProjectsPage() {
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
                   {project.cover_image_url && (
-                    <div className="h-12 w-16 overflow-hidden rounded bg-muted">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={project.cover_image_url} alt={project.title} className="h-full w-full object-cover" />
+                    <div className="relative h-12 w-16 overflow-hidden rounded bg-muted">
+                      <Image
+                        src={project.cover_image_url}
+                        alt={project.title}
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
                     </div>
                   )}
                   <div>

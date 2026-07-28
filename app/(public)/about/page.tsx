@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Target, Eye, Users, Award, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -106,12 +107,13 @@ export default async function AboutPage() {
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     {member.avatar_url && (
-                      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-full bg-muted">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                      <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                        <Image
                           src={member.avatar_url}
                           alt={member.full_name}
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="64px"
+                          className="object-cover"
                         />
                       </div>
                     )}

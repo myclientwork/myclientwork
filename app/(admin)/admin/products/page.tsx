@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Package, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -171,9 +172,14 @@ export default function AdminProductsPage() {
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-4">
                   {product.image_url ? (
-                    <div className="h-12 w-12 overflow-hidden rounded-lg bg-muted">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+                    <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-muted">
+                      <Image
+                        src={product.image_url}
+                        alt={product.name}
+                        fill
+                        sizes="48px"
+                        className="object-cover"
+                      />
                     </div>
                   ) : (
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary">

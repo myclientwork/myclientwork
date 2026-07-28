@@ -9,12 +9,12 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
-import { ApplyForm } from '@/features/jobs/components/apply-form';
+import { LazyApplyForm } from '@/features/jobs/components/lazy-apply-form';
 import type { JobPosting } from '@/lib/types';
 
 export const revalidate = 60;
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
   try {
@@ -29,10 +29,11 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props) {
+  const { slug } = await params;
   const { data: job } = await supabase
     .from('job_postings')
     .select('title, description')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'PUBLISHED')
     .maybeSingle();
 
@@ -67,7 +68,8 @@ async function getJob(slug: string) {
 }
 
 export default async function JobDetailPage({ params }: Props) {
-  const job = await getJob(params.slug);
+  const { slug } = await params;
+  const job = await getJob(slug);
   if (!job) notFound();
 
   return (
@@ -149,7 +151,7 @@ export default async function JobDetailPage({ params }: Props) {
 
             {/* Apply Interactive form client component side */}
             <div className="space-y-4">
-              <ApplyForm job={job} />
+              <LazyApplyForm job={job} />
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Mail, Phone, Linkedin, Github, Globe, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -53,12 +54,13 @@ export default async function MembersPage() {
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       {member.avatar_url ? (
-                        <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-full bg-muted ring-2 ring-primary/20">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-full bg-muted ring-2 ring-primary/20">
+                          <Image
                             src={member.avatar_url}
                             alt={member.full_name}
-                            className="h-full w-full object-cover"
+                            fill
+                            className="object-cover"
+                            sizes="80px"
                           />
                         </div>
                       ) : (

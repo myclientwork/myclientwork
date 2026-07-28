@@ -1,14 +1,11 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import { SiteHeader } from '@/shared/components/layout/site-header';
 import { SiteFooter } from '@/shared/components/layout/site-footer';
 import { AuthProvider } from '@/lib/auth-context';
 import { SettingsProvider } from '@/shared/context/settings-context';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'sonner';
-
-const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.myclientwork.online'),
@@ -36,7 +33,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen flex flex-col bg-background text-foreground antialiased`}>
+      <body className="min-h-screen flex flex-col bg-background text-foreground antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SettingsProvider>
             <AuthProvider>

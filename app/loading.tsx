@@ -1,9 +1,9 @@
-import { Loader2 } from 'lucide-react';
+import { PageLoadingSkeleton } from '@/components/page-loading-skeleton';
 
 export default function Loading() {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <PageLoadingSkeleton cards={3} rows={3} />
     </div>
   );
 }

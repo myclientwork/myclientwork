@@ -55,6 +55,22 @@ BEGIN
     RAISE EXCEPTION 'Invalid role';
   END IF;
 
+  IF p_new_role = 'user'
+    AND EXISTS (
+      SELECT 1
+      FROM public.user_profiles
+      WHERE id = p_target_user_id
+        AND role = 'admin'
+    )
+    AND (
+      SELECT count(*)
+      FROM public.user_profiles
+      WHERE role = 'admin'
+    ) <= 1
+  THEN
+    RAISE EXCEPTION 'The last administrator cannot be demoted';
+  END IF;
+
   UPDATE public.user_profiles
   SET
     role = p_new_role,

@@ -1,11 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Search, Briefcase } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { DataPagination } from '@/components/data-pagination';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import {
   Select,
   SelectContent,
@@ -29,33 +32,53 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUSES = ['ALL', 'SUBMITTED', 'UNDER_REVIEW', 'QUALIFIED', 'IN_PROGRESS', 'COMPLETED', 'REJECTED', 'CANCELLED'];
+const PAGE_SIZE = 10;
+
+function sanitizeSearchTerm(value: string) {
+  return value.trim().replace(/[%_,().]/g, ' ');
+}
 
 export default function AdminJobsPage() {
   const [jobs, setJobs] = useState<JobRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const debouncedSearch = useDebouncedValue(search);
+
+  const loadJobs = useCallback(async () => {
+    setLoading(true);
+    const from = (page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const normalizedSearch = sanitizeSearchTerm(debouncedSearch);
+
+    let query = supabase
+      .from('job_requests')
+      .select('*', { count: 'exact' });
+
+    if (statusFilter !== 'ALL') {
+      query = query.eq('status', statusFilter);
+    }
+
+    if (normalizedSearch) {
+      query = query.or(
+        `title.ilike.%${normalizedSearch}%,name.ilike.%${normalizedSearch}%,email.ilike.%${normalizedSearch}%`
+      );
+    }
+
+    const { data, count } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    setJobs((data as JobRequest[]) ?? []);
+    setTotalCount(count ?? 0);
+    setLoading(false);
+  }, [debouncedSearch, page, statusFilter]);
 
   useEffect(() => {
-    async function load() {
-      const { data } = await supabase
-        .from('job_requests')
-        .select('*')
-        .order('created_at', { ascending: false });
-      setJobs((data as JobRequest[]) ?? []);
-      setLoading(false);
-    }
-    load();
-  }, []);
-
-  const filtered = jobs.filter((j) => {
-    const matchesSearch =
-      j.title.toLowerCase().includes(search.toLowerCase()) ||
-      j.name.toLowerCase().includes(search.toLowerCase()) ||
-      j.email.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || j.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+    void loadJobs();
+  }, [loadJobs]);
 
   return (
     <div className="space-y-6">
@@ -70,11 +93,20 @@ export default function AdminJobsPage() {
           <Input
             placeholder="Search by title, name, or email..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             className="pl-9"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
+        >
           <SelectTrigger className="w-full sm:w-48">
             <SelectValue />
           </SelectTrigger>
@@ -89,8 +121,18 @@ export default function AdminJobsPage() {
       </div>
 
       {loading ? (
-        <Card><CardContent className="p-8 text-center text-muted-foreground">Loading...</CardContent></Card>
-      ) : filtered.length === 0 ? (
+        <div className="space-y-3" role="status" aria-label="Loading requirements">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Card key={index}>
+              <CardContent className="space-y-3 p-5">
+                <Skeleton className="h-5 w-52" />
+                <Skeleton className="h-4 w-80 max-w-full" />
+                <Skeleton className="h-3 w-64 max-w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : jobs.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center p-12 text-center">
             <Briefcase className="h-12 w-12 text-muted-foreground" />
@@ -99,7 +141,7 @@ export default function AdminJobsPage() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {filtered.map((job) => (
+          {jobs.map((job) => (
             <Link key={job.id} href={`/admin/jobs/${job.id}`}>
               <Card className="transition-all hover:shadow-md">
                 <CardContent className="p-5">
@@ -136,6 +178,13 @@ export default function AdminJobsPage() {
           ))}
         </div>
       )}
+
+      <DataPagination
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={totalCount}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

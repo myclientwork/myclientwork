@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { ShoppingCart, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,7 +15,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { supabase } from '@/lib/supabase';
-import type { OrderWithProduct, OrderWithUser } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { DataPagination } from '@/components/data-pagination';
 
 type AdminOrder = {
   id: string;
@@ -27,24 +29,59 @@ type AdminOrder = {
   user_profiles: { id: string; email: string; full_name: string | null };
 };
 
+const PAGE_SIZE = 10;
+
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  const loadOrders = useCallback(async () => {
+    setLoading(true);
+    const from = (page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    let query = supabase
+      .from('orders')
+      .select(
+        'id, amount_cents, currency, status, created_at, updated_at, products(id, name, slug, image_url), user_profiles(id, email, full_name)',
+        { count: 'exact' }
+      );
+
+    if (statusFilter !== 'ALL') query = query.eq('status', statusFilter);
+
+    const [ordersResult, statsResult] = await Promise.all([
+      query.order('created_at', { ascending: false }).range(from, to),
+      supabase.from('orders').select('amount_cents, status'),
+    ]);
+
+    if (ordersResult.error || statsResult.error) {
+      toast.error('Failed to load orders');
+      setLoading(false);
+      return;
+    }
+
+    const stats = statsResult.data ?? [];
+    setOrders((ordersResult.data as unknown as AdminOrder[]) ?? []);
+    setTotalCount(ordersResult.count ?? 0);
+    setTotalOrders(stats.length);
+    setTotalRevenue(
+      stats
+        .filter((order) => order.status === 'PAID')
+        .reduce((sum, order) => sum + order.amount_cents, 0)
+    );
+    setPendingCount(stats.filter((order) => order.status === 'PENDING').length);
+    setLoading(false);
+  }, [page, statusFilter]);
 
   useEffect(() => {
-    loadOrders();
-  }, []);
-
-  async function loadOrders() {
-    const { data } = await supabase
-      .from('orders')
-      .select('*, products(id, name, slug, image_url), user_profiles(id, email, full_name)')
-      .order('created_at', { ascending: false });
-    setOrders((data as AdminOrder[]) ?? []);
-    setLoading(false);
-  }
+    void loadOrders();
+  }, [loadOrders]);
 
   async function updateStatus(orderId: string, newStatus: string) {
     setUpdatingId(orderId);
@@ -54,7 +91,7 @@ export default function AdminOrdersPage() {
         .update({ status: newStatus, updated_at: new Date().toISOString() })
         .eq('id', orderId);
       if (error) throw error;
-      setOrders(orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)));
+      await loadOrders();
       toast.success('Order status updated');
     } catch {
       toast.error('Failed to update order status');
@@ -62,8 +99,6 @@ export default function AdminOrdersPage() {
       setUpdatingId(null);
     }
   }
-
-  const filtered = statusFilter === 'ALL' ? orders : orders.filter((o) => o.status === statusFilter);
 
   const statusVariant = (status: string) => {
     switch (status) {
@@ -75,21 +110,19 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const totalRevenue = orders.filter((o) => o.status === 'PAID').reduce((sum, o) => sum + o.amount_cents, 0);
-
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Orders</h1>
         <p className="mt-1 text-muted-foreground">
-          View and manage all customer orders. {orders.length} total orders.
+          View and manage all customer orders. {totalOrders} total orders.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="p-5">
-            <p className="text-2xl font-bold">{orders.length}</p>
+            <p className="text-2xl font-bold">{totalOrders}</p>
             <p className="text-sm text-muted-foreground">Total Orders</p>
           </CardContent>
         </Card>
@@ -101,14 +134,20 @@ export default function AdminOrdersPage() {
         </Card>
         <Card>
           <CardContent className="p-5">
-            <p className="text-2xl font-bold">{orders.filter((o) => o.status === 'PENDING').length}</p>
+            <p className="text-2xl font-bold">{pendingCount}</p>
             <p className="text-sm text-muted-foreground">Pending</p>
           </CardContent>
         </Card>
       </div>
 
       <div className="flex items-center gap-3">
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
+        >
           <SelectTrigger className="w-full sm:w-40">
             <SelectValue />
           </SelectTrigger>
@@ -123,8 +162,12 @@ export default function AdminOrdersPage() {
       </div>
 
       {loading ? (
-        <Card><CardContent className="p-8 text-center text-muted-foreground">Loading...</CardContent></Card>
-      ) : filtered.length === 0 ? (
+        <div className="space-y-3" aria-label="Loading orders">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton key={index} className="h-24 rounded-xl" />
+          ))}
+        </div>
+      ) : orders.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center p-12 text-center">
             <ShoppingCart className="h-12 w-12 text-muted-foreground" />
@@ -133,14 +176,19 @@ export default function AdminOrdersPage() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {filtered.map((order) => (
+          {orders.map((order) => (
             <Card key={order.id}>
               <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                   {order.products?.image_url ? (
-                    <div className="h-10 w-10 overflow-hidden rounded-lg bg-muted">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={order.products.image_url} alt={order.products.name} className="h-full w-full object-cover" />
+                    <div className="relative h-10 w-10 overflow-hidden rounded-lg bg-muted">
+                      <Image
+                        src={order.products.image_url}
+                        alt={order.products.name}
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                      />
                     </div>
                   ) : (
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
@@ -181,6 +229,13 @@ export default function AdminOrdersPage() {
           ))}
         </div>
       )}
+
+      <DataPagination
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={totalCount}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

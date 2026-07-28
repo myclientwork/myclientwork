@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -101,7 +102,7 @@ export function JobPostingForm() {
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button onClick={() => setSuccess(false)}>Create another posting</Button>
           <Button asChild variant="outline">
-            <a href="/jobs">View job listings</a>
+            <Link href="/jobs">View job listings</Link>
           </Button>
         </div>
       </div>

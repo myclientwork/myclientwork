@@ -1,42 +1,64 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Mail, Search } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { DataPagination } from '@/components/data-pagination';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { supabase } from '@/lib/supabase';
 import type { ContactMessage } from '@/lib/types';
+
+const PAGE_SIZE = 10;
+
+function sanitizeSearchTerm(value: string) {
+  return value.trim().replace(/[%_,().]/g, ' ');
+}
 
 export default function AdminMessagesPage() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const debouncedSearch = useDebouncedValue(search);
+
+  const loadMessages = useCallback(async () => {
+    setLoading(true);
+    const from = (page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const normalizedSearch = sanitizeSearchTerm(debouncedSearch);
+
+    let query = supabase
+      .from('contact_messages')
+      .select('*', { count: 'exact' });
+
+    if (normalizedSearch) {
+      query = query.or(
+        `name.ilike.%${normalizedSearch}%,email.ilike.%${normalizedSearch}%,subject.ilike.%${normalizedSearch}%`
+      );
+    }
+
+    const { data, count } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    setMessages((data as ContactMessage[]) ?? []);
+    setTotalCount(count ?? 0);
+    setLoading(false);
+  }, [debouncedSearch, page]);
 
   useEffect(() => {
-    async function load() {
-      const { data } = await supabase
-        .from('contact_messages')
-        .select('*')
-        .order('created_at', { ascending: false });
-      setMessages((data as ContactMessage[]) ?? []);
-      setLoading(false);
-    }
-    load();
-  }, []);
-
-  const filtered = messages.filter(
-    (m) =>
-      m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.email.toLowerCase().includes(search.toLowerCase()) ||
-      m.subject.toLowerCase().includes(search.toLowerCase())
-  );
+    void loadMessages();
+  }, [loadMessages]);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Messages</h1>
         <p className="mt-1 text-muted-foreground">
-          All contact form submissions. {messages.length} total.
+          Contact form submissions. {totalCount} matching messages.
         </p>
       </div>
 
@@ -45,14 +67,27 @@ export default function AdminMessagesPage() {
         <Input
           placeholder="Search messages..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
           className="pl-9"
         />
       </div>
 
       {loading ? (
-        <Card><CardContent className="p-8 text-center text-muted-foreground">Loading...</CardContent></Card>
-      ) : filtered.length === 0 ? (
+        <div className="space-y-3" role="status" aria-label="Loading messages">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Card key={index}>
+              <CardContent className="space-y-3 p-5">
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-4 w-72 max-w-full" />
+                <Skeleton className="h-12 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : messages.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center p-12 text-center">
             <Mail className="h-12 w-12 text-muted-foreground" />
@@ -61,7 +96,7 @@ export default function AdminMessagesPage() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {filtered.map((msg) => (
+          {messages.map((msg) => (
             <Card key={msg.id}>
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-4">
@@ -81,6 +116,13 @@ export default function AdminMessagesPage() {
           ))}
         </div>
       )}
+
+      <DataPagination
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={totalCount}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

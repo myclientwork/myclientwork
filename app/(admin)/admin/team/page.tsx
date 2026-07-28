@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, UserCog, Upload, X, Loader2, Camera } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -249,11 +250,12 @@ export default function AdminTeamPage() {
                 <div className="flex items-center gap-3">
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-muted">
                     {member.avatar_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={member.avatar_url}
                         alt={member.full_name}
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="48px"
+                        className="object-cover"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-lg font-bold text-muted-foreground">
@@ -310,11 +312,13 @@ export default function AdminTeamPage() {
                 <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-dashed border-border bg-muted">
                   {form.avatar_url ? (
                     <>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={form.avatar_url}
                         alt="Avatar preview"
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="80px"
+                        unoptimized
+                        className="object-cover"
                       />
                       <button
                         type="button"

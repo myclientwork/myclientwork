@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
@@ -20,7 +21,7 @@ import type { ProjectWithMembers } from '@/lib/types';
 
 export const revalidate = 60;
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
   try {
@@ -37,10 +38,11 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props) {
+  const { slug } = await params;
   const { data: project } = await supabase
     .from('projects')
     .select('title, seo_title, short_summary, seo_description, cover_image_url')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'PUBLISHED')
     .maybeSingle();
 
@@ -68,7 +70,8 @@ async function getProject(slug: string) {
 }
 
 export default async function ProjectDetailPage({ params }: Props) {
-  const project = await getProject(params.slug);
+  const { slug } = await params;
+  const project = await getProject(slug);
   if (!project) notFound();
 
   const members = project.project_members
@@ -128,12 +131,14 @@ export default async function ProjectDetailPage({ params }: Props) {
       {/* Cover image */}
       {project.cover_image_url && (
         <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="aspect-video overflow-hidden rounded-xl bg-muted shadow-lg">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+          <div className="relative aspect-video overflow-hidden rounded-xl bg-muted shadow-lg">
+            <Image
               src={project.cover_image_url}
               alt={project.title}
-              className="h-full w-full object-cover"
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 1024px"
+              className="object-cover"
             />
           </div>
         </div>
@@ -233,12 +238,13 @@ export default async function ProjectDetailPage({ params }: Props) {
                           className="flex items-start gap-3 group"
                         >
                           {pm.member.avatar_url && (
-                            <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
+                            <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                              <Image
                                 src={pm.member.avatar_url}
                                 alt={pm.member.full_name}
-                                className="h-full w-full object-cover"
+                                fill
+                                sizes="40px"
+                                className="object-cover"
                               />
                             </div>
                           )}

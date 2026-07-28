@@ -22,6 +22,9 @@ import {
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import type { JobApplicationWithUser } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { DataPagination } from '@/components/data-pagination';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
 type ApplicationWithJob = JobApplicationWithUser & {
   job_postings: { id: string; title: string; category: string };
@@ -36,14 +39,17 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUSES = ['SUBMITTED', 'UNDER_REVIEW', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'];
+const PAGE_SIZE = 10;
 
 export default function AdminApplicationsPage() {
   const [apps, setApps] = useState<ApplicationWithJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [page, setPage] = useState(1);
   const [updating, setUpdating] = useState<string | null>(null);
   const [selectedApp, setSelectedApp] = useState<ApplicationWithJob | null>(null);
+  const debouncedSearch = useDebouncedValue(search);
 
   useEffect(() => {
     loadApps();
@@ -80,12 +86,13 @@ export default function AdminApplicationsPage() {
 
   const filtered = apps.filter((a) => {
     const matchesSearch =
-      a.user_profiles?.email?.toLowerCase().includes(search.toLowerCase()) ||
-      a.user_profiles?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-      a.job_postings?.title?.toLowerCase().includes(search.toLowerCase());
+      a.user_profiles?.email?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      a.user_profiles?.full_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      a.job_postings?.title?.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || a.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+  const paginatedApps = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="space-y-6">
@@ -102,11 +109,20 @@ export default function AdminApplicationsPage() {
           <Input
             placeholder="Search by applicant name, email, or job title..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             className="pl-9"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
+        >
           <SelectTrigger className="w-full sm:w-48">
             <SelectValue />
           </SelectTrigger>
@@ -120,8 +136,10 @@ export default function AdminApplicationsPage() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="space-y-3" aria-label="Loading applications">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton key={index} className="h-44 rounded-xl" />
+          ))}
         </div>
       ) : filtered.length === 0 ? (
         <Card>
@@ -135,7 +153,7 @@ export default function AdminApplicationsPage() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {filtered.map((app) => (
+          {paginatedApps.map((app) => (
             <Card key={app.id} className="transition-all hover:shadow-md">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-4">
@@ -220,6 +238,13 @@ export default function AdminApplicationsPage() {
           ))}
         </div>
       )}
+
+      <DataPagination
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={filtered.length}
+        onPageChange={setPage}
+      />
 
       {/* Full Application Detail Dialog */}
       <Dialog open={!!selectedApp} onOpenChange={(open) => !open && setSelectedApp(null)}>

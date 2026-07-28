@@ -23,6 +23,11 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const requestedNext = searchParams.get('next');
+  const safeNext =
+    requestedNext?.startsWith('/') && !requestedNext.startsWith('//')
+      ? requestedNext
+      : null;
 
   // Show error from OAuth callback redirect
   useEffect(() => {
@@ -49,7 +54,11 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: getAuthCallbackUrl(),
+          redirectTo: (() => {
+            const callbackUrl = new URL(getAuthCallbackUrl());
+            if (safeNext) callbackUrl.searchParams.set('next', safeNext);
+            return callbackUrl.toString();
+          })(),
         },
       });
       if (error) throw error;
@@ -102,7 +111,8 @@ export default function LoginPage() {
       toast.success('Welcome back!');
       const userId = data.user?.id;
       if (!userId) {
-        router.push('/');
+        router.replace(safeNext || '/dashboard');
+        router.refresh();
         return;
       }
       // Retry up to 3 times to handle RLS / replication lag
@@ -120,7 +130,8 @@ export default function LoginPage() {
         // Wait 500ms before retry
         await new Promise((r) => setTimeout(r, 500));
       }
-      router.push(role === 'admin' ? '/admin' : '/dashboard');
+      router.replace(safeNext || (role === 'admin' ? '/admin' : '/dashboard'));
+      router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to sign in.');
     } finally {
