@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Search, Briefcase } from 'lucide-react';
+import { AdminBackLink } from '@/shared/components/layout/admin-back-link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -59,6 +60,7 @@ export default function AdminJobsPage() {
 
   return (
     <div className="space-y-6">
+      <AdminBackLink />
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Client Requirements</h1>
         <p className="mt-1 text-muted-foreground">Review and manage all submitted client project requirements.</p>

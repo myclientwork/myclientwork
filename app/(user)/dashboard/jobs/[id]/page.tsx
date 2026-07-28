@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, DollarSign, User, Mail, Phone, Building2, Globe } from 'lucide-react';
+import { UserBackLink } from '@/shared/components/layout/user-back-link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
@@ -55,13 +56,7 @@ export default function JobDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/dashboard/jobs"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to jobs
-      </Link>
+      <UserBackLink />
 
       <div>
         <div className="flex items-start justify-between gap-4">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Package, Loader2 } from 'lucide-react';
+import { AdminBackLink } from '@/shared/components/layout/admin-back-link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -138,6 +139,7 @@ export default function AdminProductsPage() {
 
   return (
     <div className="space-y-6">
+      <AdminBackLink />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Products</h1>

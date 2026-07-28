@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { AdminBackLink } from '@/shared/components/layout/admin-back-link';
 import {
   Search,
   Users,
@@ -370,6 +371,7 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
+      <AdminBackLink />
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>

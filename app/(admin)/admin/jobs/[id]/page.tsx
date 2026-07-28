@@ -5,6 +5,7 @@ import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { ArrowLeft, User, Mail, Phone, Building2, Globe, DollarSign, Calendar } from 'lucide-react';
+import { AdminBackLink } from '@/shared/components/layout/admin-back-link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -78,10 +79,7 @@ export default function AdminJobDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Link href="/admin/jobs" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Back to jobs
-      </Link>
+      <AdminBackLink />
 
       <div className="flex items-start justify-between gap-4">
         <div>

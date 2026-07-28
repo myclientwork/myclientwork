@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ShoppingCart, Loader2 } from 'lucide-react';
+import { AdminBackLink } from '@/shared/components/layout/admin-back-link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -79,6 +80,7 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="space-y-6">
+      <AdminBackLink />
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Orders</h1>
         <p className="mt-1 text-muted-foreground">

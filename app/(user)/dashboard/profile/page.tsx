@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, User, Camera } from 'lucide-react';
+import { User, Mail, Phone, Building2, Globe, Save, Loader2, Upload, Camera, Check, X, ShieldAlert } from 'lucide-react';
+import { UserBackLink } from '@/shared/components/layout/user-back-link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 
@@ -158,6 +159,7 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
+      <UserBackLink />
       <div>
         <h1 className="text-2xl font-bold tracking-tight">My Profile</h1>
         <p className="mt-1 text-muted-foreground">

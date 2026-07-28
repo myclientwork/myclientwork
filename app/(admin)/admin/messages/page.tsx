@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Mail, Search } from 'lucide-react';
+import { AdminBackLink } from '@/shared/components/layout/admin-back-link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
@@ -33,6 +34,7 @@ export default function AdminMessagesPage() {
 
   return (
     <div className="space-y-6">
+      <AdminBackLink />
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Messages</h1>
         <p className="mt-1 text-muted-foreground">

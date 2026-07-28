@@ -15,6 +15,7 @@ import {
   Database,
   Copy,
 } from 'lucide-react';
+import { AdminBackLink } from '@/shared/components/layout/admin-back-link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -204,6 +205,7 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="space-y-6">
+      <AdminBackLink />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Website Settings</h1>
