@@ -96,17 +96,17 @@ export function SiteHeader() {
     user?.user_metadata?.picture ||
     null;
 
-  const userInitial = (
+  const displayName =
     profile?.full_name ||
     user?.user_metadata?.full_name ||
-    user?.email ||
-    'U'
-  )
-    .charAt(0)
-    .toUpperCase();
+    user?.user_metadata?.name ||
+    user?.email?.split('@')[0] ||
+    'User';
+
+  const userInitial = displayName.charAt(0).toUpperCase();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur-md transition-colors">
+    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
         
         {/* Left: Logo + Company Name */}
@@ -159,151 +159,149 @@ export function SiteHeader() {
           {/* Theme Toggle Button */}
           <ThemeToggle />
 
-          {!loading && (
-            <>
-              {user ? (
-                /* Authenticated User Profile Dropdown Menu */
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2 border-border/80 rounded-full pl-1.5 pr-3 hover:bg-accent shadow-sm"
-                      aria-label="User profile menu"
-                    >
-                      {/* Avatar Profile Icon */}
-                      {avatarUrl ? (
-                        <div className="relative h-7 w-7 overflow-hidden rounded-full ring-2 ring-primary/40">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={avatarUrl}
-                            alt="User profile"
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm">
-                          {userInitial}
-                        </div>
-                      )}
-                      
-                      <span className="hidden lg:inline-block max-w-[100px] truncate text-xs font-semibold">
-                        {profile?.full_name || user.email?.split('@')[0]}
-                      </span>
+          {loading ? (
+            <div className="h-8 w-20 animate-pulse rounded-full bg-muted/60" />
+          ) : user ? (
+            /* Authenticated User Profile Dropdown Menu */
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 border-border/80 rounded-full pl-1.5 pr-3 hover:bg-accent shadow-sm"
+                  aria-label="User profile menu"
+                >
+                  {/* Avatar Profile Icon */}
+                  {avatarUrl ? (
+                    <div className="relative h-7 w-7 overflow-hidden rounded-full ring-2 ring-primary/40">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={avatarUrl}
+                        alt="User profile"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm">
+                      {userInitial}
+                    </div>
+                  )}
+                  
+                  <span className="hidden lg:inline-block max-w-[100px] truncate text-xs font-semibold">
+                    {displayName}
+                  </span>
 
-                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 p-2 shadow-xl">
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex items-center gap-3 py-1">
-                        {avatarUrl ? (
-                          <div className="h-9 w-9 overflow-hidden rounded-full ring-1 ring-primary/30">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
-                          </div>
-                        ) : (
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
-                            {userInitial}
-                          </div>
-                        )}
-                        <div className="flex flex-col space-y-0.5 min-w-0">
-                          <p className="text-sm font-semibold leading-none truncate">
-                            {profile?.full_name || 'User Account'}
-                          </p>
-                          <p className="text-[11px] leading-none text-muted-foreground truncate">
-                            {user.email}
-                          </p>
-                          {isAdmin && (
-                            <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary">
-                              <Shield className="h-2.5 w-2.5" />
-                              Admin Role
-                            </span>
-                          )}
-                        </div>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 p-2 shadow-xl">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex items-center gap-3 py-1">
+                    {avatarUrl ? (
+                      <div className="h-9 w-9 overflow-hidden rounded-full ring-1 ring-primary/30">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
                       </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    
-                    {/* User Dropdown Links */}
-                    <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link href="/dashboard" className="flex items-center gap-2 font-medium">
-                        <LayoutDashboard className="h-4 w-4 text-primary" />
-                        Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link href="/dashboard/profile" className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-primary" />
-                        My Profile
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link href="/dashboard/jobs" className="flex items-center gap-2">
-                        <Settings className="h-4 w-4 text-primary" />
-                        Settings & Requirements
-                      </Link>
-                    </DropdownMenuItem>
-                    
-                    {isAdmin && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild className="cursor-pointer">
-                          <Link href="/admin" className="flex items-center gap-2 text-primary font-semibold">
-                            <Shield className="h-4 w-4" />
-                            Admin Control Panel
-                          </Link>
-                        </DropdownMenuItem>
-                      </>
+                    ) : (
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                        {userInitial}
+                      </div>
                     )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={handleSignOut}
-                      className="cursor-pointer text-destructive focus:text-destructive"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Logout
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                /* Guest User Profile Icon Dropdown */
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-1.5 rounded-full px-2.5 border-border/80 shadow-sm hover:bg-accent"
-                      aria-label="Guest profile menu"
-                    >
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <User className="h-3.5 w-3.5" />
-                      </div>
-                      <span className="hidden sm:inline-block text-xs font-semibold">Account</span>
-                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 p-2 shadow-lg">
-                    <DropdownMenuLabel className="text-xs text-muted-foreground font-semibold">
-                      Welcome Guest
-                    </DropdownMenuLabel>
+                    <div className="flex flex-col space-y-0.5 min-w-0">
+                      <p className="text-sm font-semibold leading-none truncate">
+                        {displayName}
+                      </p>
+                      <p className="text-[11px] leading-none text-muted-foreground truncate">
+                        {user.email}
+                      </p>
+                      {isAdmin && (
+                        <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary">
+                          <Shield className="h-2.5 w-2.5" />
+                          Admin Role
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                
+                {/* User Dropdown Links */}
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/dashboard" className="flex items-center gap-2 font-medium">
+                    <LayoutDashboard className="h-4 w-4 text-primary" />
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/dashboard/profile" className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-primary" />
+                    My Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/dashboard/jobs" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4 text-primary" />
+                    Settings & Requirements
+                  </Link>
+                </DropdownMenuItem>
+                
+                {isAdmin && (
+                  <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link href="/auth/login" className="flex items-center gap-2 font-medium">
-                        <LogIn className="h-4 w-4 text-primary" />
-                        Login
+                      <Link href="/admin" className="flex items-center gap-2 text-primary font-semibold">
+                        <Shield className="h-4 w-4" />
+                        Admin Control Panel
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link href="/auth/register" className="flex items-center gap-2 font-medium">
-                        <UserPlus className="h-4 w-4 text-primary" />
-                        Sign Up
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </>
+                  </>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            /* Guest User Profile Icon Dropdown */
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1.5 rounded-full px-2.5 border-border/80 shadow-sm hover:bg-accent"
+                  aria-label="Guest profile menu"
+                >
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <User className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="hidden sm:inline-block text-xs font-semibold">Account</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 p-2 shadow-lg">
+                <DropdownMenuLabel className="text-xs text-muted-foreground font-semibold">
+                  Welcome Guest
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/auth/login" className="flex items-center gap-2 font-medium">
+                    <LogIn className="h-4 w-4 text-primary" />
+                    Login
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/auth/register" className="flex items-center gap-2 font-medium">
+                    <UserPlus className="h-4 w-4 text-primary" />
+                    Sign Up
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
 
           {/* Mobile Hamburger Toggle (hidden on desktop md:hidden) */}

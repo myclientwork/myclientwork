@@ -34,6 +34,33 @@ const AuthContext = createContext<AuthContextType>({
   refreshProfile: async () => {},
 });
 
+function cleanOAuthParams() {
+  if (typeof window === 'undefined') return;
+  // Never strip query parameters on /auth/callback so AuthCallbackPage can read the code parameter!
+  if (window.location.pathname.startsWith('/auth/callback')) return;
+
+  const { search, hash, pathname } = window.location;
+  let needsClean = false;
+
+  // Check for OAuth query params (code=, error=, state=)
+  if (search.includes('code=') || search.includes('error=')) {
+    needsClean = true;
+  }
+
+  // Check for OAuth hash fragments (access_token=, refresh_token=)
+  if (hash.includes('access_token=') || hash.includes('refresh_token=')) {
+    needsClean = true;
+  }
+
+  if (needsClean) {
+    // Small delay to let Supabase SDK detect and consume the tokens first
+    setTimeout(() => {
+      const stateObj = window.history.state ?? {};
+      window.history.replaceState(stateObj, '', pathname);
+    }, 100);
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -121,65 +148,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    // Universal PKCE Code Exchange for any page (e.g. landing on /?code=... or /auth/callback?code=...)
-    if (typeof window !== 'undefined' && window.location.search.includes('code=')) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-      if (code) {
-        supabase.auth
-          .exchangeCodeForSession(code)
-          .then(({ data }) => {
-            if (!isMounted) return;
-            // Strip ?code= parameter immediately from address bar
-            window.history.replaceState(null, '', window.location.pathname);
-            if (data?.session?.user) {
-              setSession(data.session);
-              setUser(data.session.user);
-              loadProfile(data.session.user).then((p) => {
-                if (!isMounted) return;
-                setLoading(false);
-                const targetRoute = p?.role === 'admin' ? '/admin' : '/dashboard';
-                if (
-                  window.location.pathname === '/' ||
-                  window.location.pathname.startsWith('/auth/')
-                ) {
-                  window.location.replace(targetRoute);
-                }
-              });
-            }
-          })
-          .catch((err) => {
-            console.error('PKCE exchange error:', err);
-          });
+    async function initAuth() {
+      try {
+        cleanOAuthParams();
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+        setSession(initialSession);
+        const initialUser = initialSession?.user ?? null;
+        setUser(initialUser);
+
+        if (initialUser) {
+          try {
+            await loadProfile(initialUser);
+          } catch (e) {
+            console.warn('Error loading initial profile:', e);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching initial session:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+        cleanOAuthParams();
       }
     }
+
+    initAuth();
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
       if (!isMounted) return;
+      cleanOAuthParams();
       setSession(currentSession);
       const newUser = currentSession?.user ?? null;
       setUser(newUser);
 
       if (newUser) {
-        await loadProfile(newUser);
+        try {
+          await loadProfile(newUser);
+        } catch (e) {
+          console.warn('Error loading profile on auth change:', e);
+        }
       } else {
         setProfile(null);
       }
       if (isMounted) setLoading(false);
-
-      // Clean up URL parameters / hash if code= or access_token= is present in URL
-      if (typeof window !== 'undefined') {
-        if (
-          window.location.search.includes('code=') ||
-          window.location.hash.includes('access_token=')
-        ) {
-          setTimeout(() => {
-            window.history.replaceState(null, '', window.location.pathname);
-          }, 300);
-        }
-      }
+      cleanOAuthParams();
     });
 
     return () => {
