@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
 import type { ProjectWithMembers, Member } from '@/lib/types';
+import { HeroSection } from '@/components/hero-section';
 
 export const revalidate = 60;
 
@@ -93,40 +94,8 @@ export default async function HomePage() {
 
   return (
     <div className="relative overflow-hidden bg-background">
-      {/* Glow Orbs background effect */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[500px] w-[1000px] -translate-x-1/2 rounded-full bg-gradient-to-tr from-primary/20 via-sky-500/10 to-purple-500/20 blur-3xl opacity-70" />
-
-      {/* Hero Section */}
-      <section className="relative border-b border-border/40 py-20 lg:py-32">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center text-center">
-            
-            {/* Hero Heading */}
-            <h1 className="mt-6 max-w-4xl text-balance text-4xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl">
-              We Build <span className="bg-gradient-to-r from-primary via-sky-500 to-indigo-600 bg-clip-text text-transparent">Production-Grade</span> Apps That Scale Effortlessly
-            </h1>
-
-            {/* Hero Subtitle */}
-            <p className="mt-6 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground">
-              Turn your complex project requirements into elegant, resilient, and ultra-fast web &amp; mobile applications. Explore our portfolio or post your custom requirement today.
-            </p>
-
-            {/* Hero Actions */}
-            <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button asChild size="lg" className="h-12 px-8 text-base shadow-lg shadow-primary/25 transition-all hover:scale-[1.02]">
-                <Link href="/post-a-job">
-                  Post Requirement
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="h-12 px-8 text-base border-border/80 backdrop-blur-sm transition-all hover:bg-accent">
-                <Link href="/projects">View Our Work</Link>
-              </Button>
-            </div>
-
-          </div>
-        </div>
-      </section>
+      {/* Premium Hero Section */}
+      <HeroSection />
 
       {/* Stats Section */}
       <section className="relative border-b border-border/40 bg-muted/20 py-12">
