@@ -1,7 +1,11 @@
-export const metadata = {
+import { createPageMetadata } from '@/lib/seo';
+
+export const metadata = createPageMetadata({
   title: 'Terms & Conditions',
-  description: 'Terms and conditions for using our platform.',
-};
+  description:
+    'Read the terms and conditions governing your use of the MyClientWork platform, including project submissions, payments, and service agreements.',
+  path: '/terms',
+});
 
 export default function TermsPage() {
   return (

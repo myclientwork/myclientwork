@@ -1,7 +1,11 @@
-export const metadata = {
+import { createPageMetadata } from '@/lib/seo';
+
+export const metadata = createPageMetadata({
   title: 'Privacy Policy',
-  description: 'How we collect, use, and protect your data.',
-};
+  description:
+    'Learn how MyClientWork collects, uses, and protects your personal data. Read our full privacy policy for transparency on data handling practices.',
+  path: '/privacy',
+});
 
 export default function PrivacyPage() {
   return (

@@ -46,12 +46,27 @@ export async function generateMetadata({ params }: Props) {
 
   if (!project) return { title: 'Project Not Found' };
 
+  const title = project.seo_title || project.title;
+  const description = project.seo_description || project.short_summary;
+  const images = project.cover_image_url
+    ? [{ url: project.cover_image_url, width: 1200, height: 630, alt: title }]
+    : [];
+
   return {
-    title: project.seo_title || project.title,
-    description: project.seo_description || project.short_summary,
+    title,
+    description,
+    alternates: {
+      canonical: `https://myclientwork.com/projects/${params.slug}`,
+    },
     openGraph: {
-      title: project.seo_title || project.title,
-      description: project.seo_description || project.short_summary,
+      title,
+      description,
+      url: `https://myclientwork.com/projects/${params.slug}`,
+      images,
+    },
+    twitter: {
+      title,
+      description,
       images: project.cover_image_url ? [project.cover_image_url] : [],
     },
   };

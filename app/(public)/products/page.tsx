@@ -4,13 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import type { Product } from '@/lib/types';
+import { createPageMetadata } from '@/lib/seo';
 
 export const revalidate = 60;
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: 'Software Products',
-  description: 'Browse our collection of premium software products. Instant access after purchase.',
-};
+  description:
+    'Browse and purchase premium software products, templates, and developer tools from MyClientWork. Instant download access after purchase.',
+  path: '/products',
+});
 
 async function getProducts() {
   const { data } = await supabase
