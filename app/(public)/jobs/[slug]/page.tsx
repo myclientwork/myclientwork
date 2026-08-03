@@ -39,9 +39,23 @@ export async function generateMetadata({ params }: Props) {
 
   if (!job) return { title: 'Job Not Found' };
 
+  const description = job.description.slice(0, 160);
+
   return {
     title: job.title,
-    description: job.description.slice(0, 160),
+    description,
+    alternates: {
+      canonical: `https://myclientwork.com/jobs/${params.slug}`,
+    },
+    openGraph: {
+      title: job.title,
+      description,
+      url: `https://myclientwork.com/jobs/${params.slug}`,
+    },
+    twitter: {
+      title: job.title,
+      description,
+    },
   };
 }
 

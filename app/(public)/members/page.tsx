@@ -1,17 +1,17 @@
-import Link from 'next/link';
-import { Mail, Phone, Linkedin, Github, Globe, ArrowRight } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 import type { Member } from '@/lib/types';
+import { AuroraBackground } from '@/components/ui/aurora-background';
+import { MembersClient } from '@/components/members/members-client';
+import { createPageMetadata } from '@/lib/seo';
 
 export const revalidate = 60;
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: 'Our Team',
   description:
-    'Meet our team of full-stack developers with expertise in web development, security engineering, and cloud DevOps.',
-};
+    'Meet the engineers and designers at MyClientWork — specialists in full-stack web development, cybersecurity, cloud infrastructure, and AI-driven solutions.',
+  path: '/members',
+});
 
 async function getMembers() {
   const { data } = await supabase
@@ -25,121 +25,28 @@ export default async function MembersPage() {
   const members = await getMembers();
 
   return (
-    <>
-      <section className="border-b border-border/60 bg-secondary/30">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen bg-background">
+      <AuroraBackground className="border-b border-border/40 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              Our Team
+            <span className="text-xs font-bold uppercase tracking-widest text-primary">
+              Vetted Expert Engineers
+            </span>
+            <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-6xl text-foreground">
+              Meet the Engineering Team
             </h1>
-            <p className="mt-6 text-lg text-muted-foreground">
-              Skilled developers with proven track records building
-              production-grade applications used by thousands of real users.
+            <p className="mt-5 text-lg text-muted-foreground leading-relaxed">
+              Top-tier full-stack developers with proven production track records building mission-critical applications used by thousands.
             </p>
           </div>
         </div>
-      </section>
+      </AuroraBackground>
 
-      <section className="py-16">
+      <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-6 md:grid-cols-2">
-            {members.map((member) => (
-              <Link
-                key={member.id}
-                href={`/members/${member.slug}`}
-                className="group"
-              >
-                <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      {member.avatar_url ? (
-                        <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-full bg-muted ring-2 ring-primary/20">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={member.avatar_url}
-                            alt={member.full_name}
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-2xl">
-                          {member.full_name.charAt(0)}
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <h2 className="text-lg font-semibold group-hover:text-primary">
-                          {member.full_name}
-                        </h2>
-                        <p className="text-sm text-primary">{member.title}</p>
-                        {member.location && (
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            {member.location}
-                          </p>
-                        )}
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                          {member.skills.slice(0, 6).map((skill) => (
-                            <span
-                              key={skill}
-                              className="rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
-                            >
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <p className="mt-4 line-clamp-3 text-sm text-muted-foreground">
-                      {member.bio}
-                    </p>
-                    <div className="mt-4 flex items-center gap-3 text-sm text-muted-foreground">
-                      {member.email && (
-                        <a
-                          href={`mailto:${member.email}`}
-                          className="hover:text-foreground"
-                        >
-                          <Mail className="h-4 w-4" />
-                        </a>
-                      )}
-                      {member.phone && (
-                        <a
-                          href={`tel:${member.phone}`}
-                          className="hover:text-foreground"
-                        >
-                          <Phone className="h-4 w-4" />
-                        </a>
-                      )}
-                      {member.linkedin_url && (
-                        <a
-                          href={member.linkedin_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-foreground"
-                        >
-                          <Linkedin className="h-4 w-4" />
-                        </a>
-                      )}
-                      {member.github_url && (
-                        <a
-                          href={member.github_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-foreground"
-                        >
-                          <Github className="h-4 w-4" />
-                        </a>
-                      )}
-                      <span className="ml-auto flex items-center gap-1 text-primary text-xs font-medium">
-                        View profile
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+          <MembersClient members={members} />
         </div>
       </section>
-    </>
+    </div>
   );
 }

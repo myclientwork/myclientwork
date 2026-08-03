@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import { sendEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -13,71 +13,140 @@ export async function POST(request: Request) {
       );
     }
 
-    const readableStatus = status.replace(/_/g, ' ');
+    // Format status nicely (e.g., "IN_PROGRESS" -> "In Progress")
+    const formattedStatus = status
+      .toLowerCase()
+      .split('_')
+      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
 
-    // Configure Nodemailer Transporter
-    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-    const port = parseInt(process.env.SMTP_PORT || '587', 10);
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s+/g, '') : undefined;
-    const from = process.env.SMTP_FROM || user || '"MyClientWork Team" <noreply@myclientwork.online>';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://myclientwork.online';
+    const dashboardLink = jobId ? `${siteUrl}/dashboard/jobs/${jobId}` : `${siteUrl}/dashboard`;
 
-    let emailSent = false;
-    let emailNote = '';
-
-    if (user && pass) {
-      const transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: {
-          user,
-          pass,
-        },
-      });
-
-      const htmlContent = `
-        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #ffffff;">
-          <div style="background-color: #0f172a; padding: 16px 24px; border-radius: 6px 6px 0 0; text-align: center;">
-            <h2 style="color: #ffffff; margin: 0; font-size: 20px;">Requirement Status Update</h2>
-          </div>
-          <div style="padding: 24px; color: #333333; line-height: 1.6;">
-            <p>Dear <strong>${clientName || 'Valued Client'}</strong>,</p>
-            <p>The status of your project requirement <strong>"${jobTitle || 'Project Requirement'}"</strong> has been updated by our team:</p>
-            <div style="margin: 20px 0; padding: 16px; background-color: #f8fafc; border-left: 4px solid #2563eb; border-radius: 4px;">
-              <p style="margin: 0; font-size: 14px; color: #64748b;">New Requirement Status:</p>
-              <p style="margin: 4px 0 0 0; font-size: 18px; font-weight: bold; color: #0f172a;">${readableStatus}</p>
-            </div>
-            <p>If you have any questions or additional details to provide, please reply to this email or visit your dashboard workspace.</p>
-            <p style="margin-top: 24px; font-size: 14px; color: #64748b;">Thank you for choosing <strong>MyClientWork</strong>.</p>
-          </div>
-          <div style="background-color: #f1f5f9; padding: 12px 24px; border-radius: 0 0 6px 6px; text-align: center; font-size: 12px; color: #94a3b8;">
-            © ${new Date().getFullYear()} MyClientWork. All rights reserved.
-          </div>
-        </div>
-      `;
-
-      await transporter.sendMail({
-        from,
-        to: clientEmail,
-        subject: `Update on your requirement: ${jobTitle} [${readableStatus}]`,
-        html: htmlContent,
-      });
-
-      emailSent = true;
-      emailNote = `Email sent successfully via Nodemailer to ${clientEmail}`;
-    } else {
-      console.log(`[Nodemailer Mock Mode] SMTP credentials not set. Status change notification for "${jobTitle}" (${readableStatus}) intended for ${clientEmail}`);
-      emailNote = `Status updated successfully. (Note: SMTP credentials not set, email logged to console)`;
+    // Sleek status badge colors
+    let badgeBg = '#0284c7';
+    let badgeText = '#ffffff';
+    if (status === 'COMPLETED' || status === 'QUALIFIED') {
+      badgeBg = '#10b981';
+    } else if (status === 'IN_PROGRESS') {
+      badgeBg = '#6366f1';
+    } else if (status === 'REJECTED' || status === 'CANCELLED') {
+      badgeBg = '#ef4444';
     }
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Project Requirement Update</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0b0f19; padding: 40px 10px;">
+          <tr>
+            <td align="center">
+              <table role="presentation" width="100%" style="max-width: 600px; background-color: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+                
+                <!-- Header Banner -->
+                <tr>
+                  <td style="background: linear-gradient(135deg, #050816 0%, #1e1b4b 50%, #0f172a 100%); padding: 32px 30px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                    <div style="display: inline-block; padding: 6px 16px; background-color: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 20px; color: #38bdf8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
+                      MyClientWork Workspace
+                    </div>
+                    <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; tracking-tight: -0.5px;">
+                      Project Requirement Update
+                    </h1>
+                  </td>
+                </tr>
+
+                <!-- Content Area -->
+                <tr>
+                  <td style="padding: 36px 30px; color: #cbd5e1; font-size: 15px; line-height: 1.6;">
+                    <p style="margin-top: 0; color: #f8fafc; font-size: 16px; font-weight: 600;">
+                      Hello ${clientName || 'Valued Client'},
+                    </p>
+                    <p style="margin-bottom: 24px; color: #94a3b8;">
+                      Our engineering team has updated the execution status for your submitted requirement specs.
+                    </p>
+
+                    <!-- Requirement Details Card -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; margin-bottom: 28px; padding: 20px;">
+                      <tr>
+                        <td>
+                          <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 6px;">
+                            Requirement Title
+                          </div>
+                          <div style="font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 16px;">
+                            ${jobTitle || 'Custom Application Specs'}
+                          </div>
+
+                          <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 6px;">
+                            Updated Execution Status
+                          </div>
+                          <div>
+                            <span style="display: inline-block; background-color: ${badgeBg}; color: ${badgeText}; font-size: 13px; font-weight: 700; padding: 6px 16px; border-radius: 20px; letter-spacing: 0.3px;">
+                              ${formattedStatus}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <p style="margin-bottom: 28px; color: #94a3b8; font-size: 14px;">
+                      You can review real-time milestones, submit feedback, or communicate with our engineering leads directly through your client workspace.
+                    </p>
+
+                    <!-- Action Button -->
+                    <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 10px auto;">
+                      <tr>
+                        <td align="center" style="border-radius: 12px; background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);">
+                          <a href="${dashboardLink}" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 12px;">
+                            View Requirement in Workspace &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                  <td style="background-color: #090d16; padding: 20px 30px; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px; color: #64748b;">
+                    <p style="margin: 0 0 6px 0;">
+                      Need assistance? Contact us at <a href="mailto:myclientwork3@gmail.com" style="color: #38bdf8; text-decoration: none;">myclientwork3@gmail.com</a>
+                    </p>
+                    <p style="margin: 0;">
+                      &copy; ${new Date().getFullYear()} MyClientWork (myclientwork.online). All rights reserved.
+                    </p>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+
+    // Clean professional subject line without raw status tags
+    const emailSubject = `Project Requirement Update: ${jobTitle || 'Requirement Specs'}`;
+
+    const emailResult = await sendEmail({
+      to: clientEmail,
+      subject: emailSubject,
+      html: htmlContent,
+    });
 
     return NextResponse.json({
       success: true,
-      emailSent,
-      message: emailNote,
+      emailSent: emailResult.success,
+      method: emailResult.method,
+      message: emailResult.message,
     });
   } catch (error: any) {
-    console.error('Error sending status email via Nodemailer:', error);
+    console.error('Error sending status notification:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to send email notification' },
       { status: 500 }

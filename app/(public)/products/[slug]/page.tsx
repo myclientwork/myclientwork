@@ -25,15 +25,34 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props) {
   const { data: product } = await supabase
     .from('products')
-    .select('name, description')
+    .select('name, description, image_url')
     .eq('slug', params.slug)
     .maybeSingle();
 
   if (!product) return { title: 'Product Not Found' };
 
+  const description = product.description.slice(0, 160);
+  const images = product.image_url
+    ? [{ url: product.image_url, width: 1200, height: 630, alt: product.name }]
+    : [];
+
   return {
     title: product.name,
-    description: product.description.slice(0, 160),
+    description,
+    alternates: {
+      canonical: `https://myclientwork.com/products/${params.slug}`,
+    },
+    openGraph: {
+      title: product.name,
+      description,
+      url: `https://myclientwork.com/products/${params.slug}`,
+      images,
+    },
+    twitter: {
+      title: product.name,
+      description,
+      images: product.image_url ? [product.image_url] : [],
+    },
   };
 }
 

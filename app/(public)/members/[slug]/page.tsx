@@ -37,15 +37,35 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props) {
   const { data: member } = await supabase
     .from('members')
-    .select('full_name, title, bio')
+    .select('full_name, title, bio, avatar_url')
     .eq('slug', params.slug)
     .maybeSingle();
 
   if (!member) return { title: 'Member Not Found' };
 
+  const pageTitle = `${member.full_name} — ${member.title}`;
+  const description = member.bio.slice(0, 160);
+  const images = member.avatar_url
+    ? [{ url: member.avatar_url, width: 400, height: 400, alt: member.full_name }]
+    : [];
+
   return {
-    title: `${member.full_name} — ${member.title}`,
-    description: member.bio.slice(0, 160),
+    title: pageTitle,
+    description,
+    alternates: {
+      canonical: `https://myclientwork.com/members/${params.slug}`,
+    },
+    openGraph: {
+      title: pageTitle,
+      description,
+      url: `https://myclientwork.com/members/${params.slug}`,
+      images,
+    },
+    twitter: {
+      title: pageTitle,
+      description,
+      images: member.avatar_url ? [member.avatar_url] : [],
+    },
   };
 }
 

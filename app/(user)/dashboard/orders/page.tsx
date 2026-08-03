@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, Download, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Package, Download, Loader2, ArrowUpRight } from 'lucide-react';
 import { UserBackLink } from '@/shared/components/layout/user-back-link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
-import type { OrderWithProduct } from '@/lib/types';
+import { fadeIn, staggerContainer } from '@/lib/motion';
 
 type UserOrder = {
   id: string;
@@ -39,80 +40,99 @@ export default function DashboardOrdersPage() {
     loadOrders();
   }, [user]);
 
-  const statusVariant = (status: string) => {
+  const statusVariantClass = (status: string) => {
     switch (status) {
-      case 'PAID': return 'default';
-      case 'PENDING': return 'secondary';
-      case 'FAILED': return 'destructive';
-      case 'REFUNDED': return 'outline';
-      default: return 'secondary';
+      case 'PAID': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+      case 'PENDING': return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+      case 'FAILED': return 'bg-red-500/10 text-red-400 border-red-500/30';
+      case 'REFUNDED': return 'bg-slate-500/10 text-slate-400 border-slate-500/30';
+      default: return 'bg-secondary text-muted-foreground';
     }
   };
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="space-y-6"
+    >
       <UserBackLink />
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">My Orders</h1>
-        <p className="mt-1 text-muted-foreground">View your purchase history and download products.</p>
+        <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+          My Orders
+        </h1>
+        <p className="mt-1 text-xs text-muted-foreground font-medium">
+          View your transaction history and instant product access licenses.
+        </p>
       </div>
 
       {loading ? (
-        <Card><CardContent className="p-8 text-center text-muted-foreground">
-          <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
-        </CardContent></Card>
+        <Card className="rounded-2xl border-border/60 bg-card/60 p-12 text-center">
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+        </Card>
       ) : orders.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center p-12 text-center">
-            <Package className="h-12 w-12 text-muted-foreground" />
-            <p className="mt-4 font-medium">No orders yet.</p>
-            <p className="mt-1 text-sm text-muted-foreground">Browse our products to get started.</p>
-            <Button asChild className="mt-4">
-              <Link href="/products">Browse Products</Link>
+        <Card className="rounded-2xl border-border/60 bg-card/60 p-12 text-center backdrop-blur-xl">
+          <CardContent className="flex flex-col items-center p-0">
+            <Package className="h-12 w-12 text-muted-foreground/40 mb-3" />
+            <p className="font-bold text-foreground">No digital product orders yet.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Browse our digital products store to purchase ready-to-deploy systems.</p>
+            <Button asChild className="mt-5 rounded-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+              <Link href="/products">Browse Digital Products</Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3">
-          {orders.map((order) => (
-            <Card key={order.id}>
-              <CardContent className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  {order.products?.image_url ? (
-                    <div className="h-10 w-10 overflow-hidden rounded-lg bg-muted">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={order.products.image_url} alt={order.products.name} className="h-full w-full object-cover" />
-                    </div>
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
-                      <Package className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div>
-                    <Link href={`/products/${order.products.slug}`} className="font-medium hover:underline">
-                      {order.products?.name || 'Unknown product'}
-                    </Link>
-                    <p className="text-sm text-muted-foreground">
-                      ${(order.amount_cents / 100).toFixed(2)} {order.currency} · {new Date(order.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={statusVariant(order.status)}>{order.status}</Badge>
-                  {order.status === 'PAID' && (
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/products/${order.products.slug}`}>
-                        <Download className="mr-1.5 h-3.5 w-3.5" />
-                        Download
+        <motion.div
+          variants={staggerContainer(0.08, 0.05)}
+          initial="hidden"
+          animate="show"
+          className="space-y-3"
+        >
+          {orders.map((order, i) => (
+            <motion.div key={order.id} variants={fadeIn('up', i * 0.05, 0.4)}>
+              <Card className="rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xl transition-all duration-300 hover:border-primary/40 hover:shadow-xl">
+                <CardContent className="flex items-center justify-between p-5">
+                  <div className="flex items-center gap-4">
+                    {order.products?.image_url ? (
+                      <div className="h-12 w-12 overflow-hidden rounded-xl bg-muted ring-1 ring-border shadow-sm flex-shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={order.products.image_url} alt={order.products.name} className="h-full w-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary flex-shrink-0">
+                        <Package className="h-6 w-6" />
+                      </div>
+                    )}
+                    <div>
+                      <Link href={`/products/${order.products.slug}`} className="font-bold text-sm text-foreground hover:text-primary transition-colors inline-flex items-center gap-1">
+                        {order.products?.name || 'Digital Product Asset'}
+                        <ArrowUpRight className="h-3.5 w-3.5" />
                       </Link>
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                      <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                        ${(order.amount_cents / 100).toFixed(2)} {order.currency} · Purchased {new Date(order.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline" className={`rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider ${statusVariantClass(order.status)}`}>
+                      {order.status}
+                    </Badge>
+                    {order.status === 'PAID' && (
+                      <Button asChild size="sm" className="rounded-xl font-bold bg-primary text-primary-foreground shadow-md">
+                        <Link href={`/products/${order.products.slug}`}>
+                          <Download className="mr-1.5 h-3.5 w-3.5" />
+                          Access
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }
