@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase';
 import { ApplyForm } from '@/features/jobs/components/apply-form';
 import { AuthGuard } from '@/features/auth/components/auth-guard';
 import type { JobPosting } from '@/lib/types';
+import { SITE_URL } from '@/lib/seo';
 
 export const revalidate = 60;
 
@@ -45,12 +46,12 @@ export async function generateMetadata({ params }: Props) {
     title: job.title,
     description,
     alternates: {
-      canonical: `https://myclientwork.com/jobs/${params.slug}`,
+      canonical: `${SITE_URL}/jobs/${params.slug}`,
     },
     openGraph: {
       title: job.title,
       description,
-      url: `https://myclientwork.com/jobs/${params.slug}`,
+      url: `${SITE_URL}/jobs/${params.slug}`,
     },
     twitter: {
       title: job.title,

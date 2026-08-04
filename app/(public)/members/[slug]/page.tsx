@@ -18,6 +18,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 import type { Member, ProjectWithMembers } from '@/lib/types';
+import { SITE_URL } from '@/lib/seo';
 
 export const revalidate = 60;
 
@@ -53,12 +54,12 @@ export async function generateMetadata({ params }: Props) {
     title: pageTitle,
     description,
     alternates: {
-      canonical: `https://myclientwork.com/members/${params.slug}`,
+      canonical: `${SITE_URL}/members/${params.slug}`,
     },
     openGraph: {
       title: pageTitle,
       description,
-      url: `https://myclientwork.com/members/${params.slug}`,
+      url: `${SITE_URL}/members/${params.slug}`,
       images,
     },
     twitter: {

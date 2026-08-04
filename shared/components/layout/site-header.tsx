@@ -189,11 +189,13 @@ export function SiteHeader() {
                 >
                   {avatarUrl ? (
                     <div className="relative h-7 w-7 overflow-hidden rounded-full ring-2 ring-primary/40">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={avatarUrl}
                         alt="User profile"
+                        width={28}
+                        height={28}
                         className="h-full w-full object-cover"
+                        unoptimized
                       />
                     </div>
                   ) : (
@@ -206,7 +208,7 @@ export function SiteHeader() {
                     {displayName}
                   </span>
 
-                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 p-2 shadow-2xl rounded-xl border border-border/80 bg-background/95 backdrop-blur-xl">
@@ -214,8 +216,7 @@ export function SiteHeader() {
                   <div className="flex items-center gap-3 py-1">
                     {avatarUrl ? (
                       <div className="h-9 w-9 overflow-hidden rounded-full ring-1 ring-primary/30">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+                        <Image src={avatarUrl} alt="Avatar" width={36} height={36} className="h-full w-full object-cover" unoptimized />
                       </div>
                     ) : (
                       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
@@ -293,7 +294,7 @@ export function SiteHeader() {
                     <User className="h-3.5 w-3.5" />
                   </div>
                   <span className="hidden sm:inline-block text-xs font-bold">Account</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 p-2 shadow-2xl rounded-xl border border-border/80 bg-background/95 backdrop-blur-xl">

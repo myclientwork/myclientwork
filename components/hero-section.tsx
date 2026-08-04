@@ -2,12 +2,10 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play, Sparkles, Shield, Cpu, Zap, Star } from 'lucide-react';
+import { ArrowRight, Play, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { WordReveal } from '@/components/ui/word-reveal';
 import { MagneticButton } from '@/components/ui/magnetic-button';
-import { HeroWidgets } from '@/components/ui/hero-widgets';
 import { AuroraBackground } from '@/components/ui/aurora-background';
 
 export function HeroSection() {
@@ -28,11 +26,11 @@ export function HeroSection() {
             whileHover={{ scale: 1.05 }}
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-1.5 backdrop-blur-xl shadow-lg shadow-cyan-500/10"
           >
-            <span className="relative flex h-2 w-2">
+            <span className="relative flex h-2 w-2" aria-hidden="true">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400"></span>
             </span>
-            <Sparkles className="h-4 w-4 text-cyan-400 animate-pulse" />
+            <Sparkles className="h-4 w-4 text-cyan-400 animate-pulse" aria-hidden="true" />
             <span className="text-xs font-bold tracking-wide text-cyan-300 uppercase">
               Next-Gen AI Freelance Marketplace &amp; Workspace
             </span>
@@ -41,8 +39,8 @@ export function HeroSection() {
           {/* Headline Reveal */}
           <div className="max-w-5xl">
             <WordReveal
-              text="Find the Right Talent. Build Better Projects. Powered by AI."
-              gradientWords={['Right', 'Talent.', 'Better', 'Projects.', 'AI.']}
+              text="Your Vision. Our Engineering. Global Impact."
+              gradientWords={['Vision.', 'Engineering.', 'Impact.']}
               className="text-4xl font-black tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl leading-[1.08] text-foreground"
             />
           </div>
@@ -54,10 +52,12 @@ export function HeroSection() {
             transition={{ duration: 0.6, delay: 0.25 }}
             className="mt-6 max-w-3xl text-balance text-base sm:text-xl leading-relaxed text-muted-foreground/90 font-normal"
           >
-            Transform your vision into high-performance digital products. MyClientWork pairs your project requirements with{' '}
-            <strong className="font-semibold text-foreground">top-tier full-stack engineers</strong> and{' '}
-            <strong className="font-semibold text-foreground">AI workflows</strong> — delivering production-grade software with{' '}
-            <strong className="font-semibold text-foreground">sub-50ms speed</strong> and milestone-backed guarantees.
+            We design, build, and scale{' '}
+            <strong className="font-semibold text-foreground">secure web applications</strong>,{' '}
+            <strong className="font-semibold text-foreground">mobile apps</strong>,{' '}
+            <strong className="font-semibold text-foreground">AI solutions</strong>, and{' '}
+            <strong className="font-semibold text-foreground">enterprise software</strong>{' '}
+            that help businesses grow with confidence.
           </motion.p>
 
           {/* CTA Action Buttons with Magnetic Scaling */}
@@ -70,7 +70,7 @@ export function HeroSection() {
             {/* Primary Glowing CTA */}
             <MagneticButton className="w-full sm:w-auto">
               <div className="relative group w-full sm:w-auto">
-                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 opacity-75 blur-md transition-all duration-300 group-hover:opacity-100 group-hover:blur-lg" />
+                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 opacity-75 blur-md transition-all duration-300 group-hover:opacity-100 group-hover:blur-lg" aria-hidden="true" />
                 <Button
                   asChild
                   size="lg"
@@ -93,15 +93,12 @@ export function HeroSection() {
                 className="h-14 w-full sm:w-auto px-8 text-base font-bold rounded-2xl border-white/20 bg-background/50 backdrop-blur-xl transition-all duration-300 hover:bg-accent/80 hover:border-primary/50 hover:scale-[1.02] active:scale-[0.98] shadow-lg"
               >
                 <Link href="/projects" className="flex items-center justify-center gap-2.5">
-                  <Play className="h-4 w-4 text-cyan-400 fill-cyan-400/20" />
+                  <Play className="h-4 w-4 text-cyan-400 fill-cyan-400/20" aria-hidden="true" />
                   <span>Explore Portfolio</span>
                 </Link>
               </Button>
             </MagneticButton>
           </motion.div>
-
-          {/* Interactive Floating AI Dashboard Showcase */}
-          <HeroWidgets />
 
         </motion.div>
       </div>

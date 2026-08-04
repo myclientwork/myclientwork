@@ -187,18 +187,29 @@
   }
   .animate-float {
     animation: float 6s ease-in-out infinite;
+    will-change: transform;
   }
   .animate-float-delayed {
     animation: float 7s ease-in-out 2s infinite;
+    will-change: transform;
   }
   .animate-float-reverse {
     animation: float-reverse 6.5s ease-in-out 1s infinite;
+    will-change: transform;
   }
   .animate-pulse-glow {
     animation: pulse-glow 4s ease-in-out infinite;
+    will-change: transform, opacity;
   }
   .animate-aurora {
     animation: aurora-move 12s ease infinite alternate;
+    will-change: transform;
+  }
+
+  /* Production rendering & layout isolation performance hints */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 500px;
   }
 }
 
