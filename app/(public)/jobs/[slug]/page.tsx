@@ -18,40 +18,71 @@ export const revalidate = 60;
 
 type Props = { params: { slug: string } };
 
+function toCleanSlug(rawSlug: string): string {
+  return rawSlug.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+}
+
+async function getJob(slugParam: string) {
+  const decoded = decodeURIComponent(slugParam).trim();
+  const clean = toCleanSlug(decoded);
+  const unhyphenated = decoded.replace(/-/g, ' ');
+
+  const { data: jobs } = await supabase
+    .from('job_postings')
+    .select(
+      'id, slug, title, description, category, technologies, experience_level, location, remote_ok, budget_min_cents, budget_max_cents, currency, deadline, status'
+    )
+    .eq('status', 'PUBLISHED');
+
+  if (!jobs || jobs.length === 0) return null;
+
+  const match = jobs.find(
+    (j) =>
+      j.slug === decoded ||
+      j.slug === slugParam ||
+      (j.slug && toCleanSlug(j.slug) === clean) ||
+      (j.title && j.title.toLowerCase() === decoded.toLowerCase()) ||
+      (j.slug && j.slug.toLowerCase() === unhyphenated.toLowerCase())
+  );
+
+  return (match as JobPosting) || null;
+}
+
 export async function generateStaticParams() {
   try {
     const { data: jobs } = await supabase
       .from('job_postings')
       .select('slug')
       .eq('status', 'PUBLISHED');
-    return jobs?.map((j) => ({ slug: j.slug })) ?? [];
+
+    return (
+      jobs
+        ?.map((j) => ({ slug: toCleanSlug(j.slug) }))
+        .filter((item): item is { slug: string } => Boolean(item.slug)) ?? []
+    );
   } catch {
     return [];
   }
 }
 
 export async function generateMetadata({ params }: Props) {
-  const { data: job } = await supabase
-    .from('job_postings')
-    .select('title, description')
-    .eq('slug', params.slug)
-    .eq('status', 'PUBLISHED')
-    .maybeSingle();
+  const job = await getJob(params.slug);
 
   if (!job) return { title: 'Job Not Found' };
 
   const description = job.description.slice(0, 160);
+  const cleanSlug = toCleanSlug(job.slug || params.slug);
 
   return {
     title: job.title,
     description,
     alternates: {
-      canonical: `${SITE_URL}/jobs/${params.slug}`,
+      canonical: `${SITE_URL}/jobs/${cleanSlug}`,
     },
     openGraph: {
       title: job.title,
       description,
-      url: `${SITE_URL}/jobs/${params.slug}`,
+      url: `${SITE_URL}/jobs/${cleanSlug}`,
     },
     twitter: {
       title: job.title,
@@ -69,18 +100,6 @@ const EXPERIENCE_LABELS: Record<string, string> = {
   lead: 'Lead',
   any: 'Any Level',
 };
-
-async function getJob(slug: string) {
-  const { data } = await supabase
-    .from('job_postings')
-    .select(
-      'id, slug, title, description, category, technologies, experience_level, location, remote_ok, budget_min_cents, budget_max_cents, currency, deadline, status'
-    )
-    .eq('slug', slug)
-    .eq('status', 'PUBLISHED')
-    .maybeSingle();
-  return data as JobPosting | null;
-}
 
 export default async function JobDetailPage({ params }: Props) {
   const job = await getJob(params.slug);

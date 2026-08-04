@@ -2,6 +2,18 @@ import type { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 import { SITE_URL } from '@/lib/seo';
 
+/**
+ * Ensures a slug is clean, lowercased, hyphenated, and contains no spaces or invalid characters.
+ * E.g., "Support Engineer" -> "support-engineer"
+ */
+function toCleanSlug(rawSlug: unknown): string | null {
+  if (!rawSlug || typeof rawSlug !== 'string') return null;
+  const trimmed = rawSlug.trim();
+  if (!trimmed) return null;
+  const slugified = trimmed.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+  return slugified || null;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ─── Static public routes ──────────────────────────────────────────────────
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -81,13 +93,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .select('slug, updated_at')
       .eq('status', 'PUBLISHED');
 
-    projectRoutes =
-      projects?.map((project) => ({
-        url: `${SITE_URL}/projects/${project.slug}`,
-        lastModified: new Date(project.updated_at),
-        changeFrequency: 'monthly' as const,
-        priority: 0.7,
-      })) ?? [];
+    projectRoutes = (projects ?? [])
+      .map((project) => {
+        const slug = toCleanSlug(project.slug);
+        if (!slug) return null;
+        return {
+          url: `${SITE_URL}/projects/${slug}`,
+          lastModified: project.updated_at ? new Date(project.updated_at) : new Date(),
+          changeFrequency: 'monthly' as const,
+          priority: 0.7,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
   } catch {
     // Silently skip if DB is unreachable during build
   }
@@ -99,13 +116,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from('members')
       .select('slug, updated_at');
 
-    memberRoutes =
-      members?.map((member) => ({
-        url: `${SITE_URL}/members/${member.slug}`,
-        lastModified: new Date(member.updated_at),
-        changeFrequency: 'monthly' as const,
-        priority: 0.6,
-      })) ?? [];
+    memberRoutes = (members ?? [])
+      .map((member) => {
+        const slug = toCleanSlug(member.slug);
+        if (!slug) return null;
+        return {
+          url: `${SITE_URL}/members/${slug}`,
+          lastModified: member.updated_at ? new Date(member.updated_at) : new Date(),
+          changeFrequency: 'monthly' as const,
+          priority: 0.6,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
   } catch {
     // Silently skip
   }
@@ -118,13 +140,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .select('slug, updated_at')
       .eq('status', 'PUBLISHED');
 
-    productRoutes =
-      products?.map((product) => ({
-        url: `${SITE_URL}/products/${product.slug}`,
-        lastModified: new Date(product.updated_at),
-        changeFrequency: 'monthly' as const,
-        priority: 0.6,
-      })) ?? [];
+    productRoutes = (products ?? [])
+      .map((product) => {
+        const slug = toCleanSlug(product.slug);
+        if (!slug) return null;
+        return {
+          url: `${SITE_URL}/products/${slug}`,
+          lastModified: product.updated_at ? new Date(product.updated_at) : new Date(),
+          changeFrequency: 'monthly' as const,
+          priority: 0.6,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
   } catch {
     // Silently skip
   }
@@ -137,13 +164,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .select('slug, updated_at')
       .eq('status', 'PUBLISHED');
 
-    jobRoutes =
-      jobs?.map((job) => ({
-        url: `${SITE_URL}/jobs/${job.slug}`,
-        lastModified: new Date(job.updated_at),
-        changeFrequency: 'weekly' as const,
-        priority: 0.6,
-      })) ?? [];
+    jobRoutes = (jobs ?? [])
+      .map((job) => {
+        const slug = toCleanSlug(job.slug);
+        if (!slug) return null;
+        return {
+          url: `${SITE_URL}/jobs/${slug}`,
+          lastModified: job.updated_at ? new Date(job.updated_at) : new Date(),
+          changeFrequency: 'weekly' as const,
+          priority: 0.6,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
   } catch {
     // Silently skip
   }

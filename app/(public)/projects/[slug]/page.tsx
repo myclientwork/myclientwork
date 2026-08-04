@@ -23,15 +23,21 @@ export const revalidate = 60;
 
 type Props = { params: { slug: string } };
 
+function toCleanSlug(rawSlug: string): string {
+  return rawSlug.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+}
+
 export async function generateStaticParams() {
   try {
     const { data: projects } = await supabase
       .from('projects')
       .select('slug')
       .eq('status', 'PUBLISHED');
-    return projects?.map((project) => ({
-      slug: project.slug,
-    })) ?? [];
+    return (
+      projects
+        ?.map((project) => ({ slug: toCleanSlug(project.slug) }))
+        .filter((item): item is { slug: string } => Boolean(item.slug)) ?? []
+    );
   } catch {
     return [];
   }
