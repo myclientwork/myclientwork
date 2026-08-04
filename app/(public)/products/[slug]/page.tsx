@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { ProductPurchase } from '@/features/products/components/product-purchase';
 import type { Product } from '@/lib/types';
+import { SITE_URL } from '@/lib/seo';
 
 export const revalidate = 60;
 
@@ -40,12 +41,12 @@ export async function generateMetadata({ params }: Props) {
     title: product.name,
     description,
     alternates: {
-      canonical: `https://myclientwork.com/products/${params.slug}`,
+      canonical: `${SITE_URL}/products/${params.slug}`,
     },
     openGraph: {
       title: product.name,
       description,
-      url: `https://myclientwork.com/products/${params.slug}`,
+      url: `${SITE_URL}/products/${params.slug}`,
       images,
     },
     twitter: {

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,11 +42,14 @@ export function TeamSection({ members }: TeamSectionProps) {
                   <CardContent className="flex items-start gap-5 p-6 sm:p-8">
                     {member.avatar_url ? (
                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-full ring-2 ring-primary/40 bg-muted shadow-md group-hover:scale-105 transition-transform">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={member.avatar_url}
                           alt={member.full_name}
+                          width={64}
+                          height={64}
                           className="h-full w-full object-cover"
+                          loading="lazy"
+                          unoptimized
                         />
                       </div>
                     ) : (

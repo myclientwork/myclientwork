@@ -2,7 +2,20 @@ import type { Metadata } from 'next';
 
 // ─── Site-wide SEO Constants ───────────────────────────────────────────────────
 
-export const SITE_URL = 'https://myclientwork.com';
+function getSiteUrl(): string {
+  let url =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_VERCEL_URL ||
+    'https://myclientwork.online';
+
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`;
+  }
+  return url.replace(/\/+$/, '');
+}
+
+export const SITE_URL = getSiteUrl();
 export const SITE_NAME = 'MyClientWork';
 export const SITE_TAGLINE = 'Digital Services. Professional Solutions.';
 export const SITE_DESCRIPTION =

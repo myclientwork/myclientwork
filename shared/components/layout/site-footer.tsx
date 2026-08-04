@@ -19,8 +19,8 @@ export function SiteFooter() {
   return (
     <footer className="relative overflow-hidden border-t border-border/60 bg-slate-950/80 backdrop-blur-xl text-slate-200 transition-colors">
       {/* Dynamic Background Glow */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-grid-mask opacity-30" />
-      <div className="pointer-events-none absolute -bottom-40 left-1/2 -z-10 h-[350px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-t from-indigo-500/10 via-cyan-500/10 to-transparent blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-grid-mask opacity-30" aria-hidden="true" />
+      <div className="pointer-events-none absolute -bottom-40 left-1/2 -z-10 h-[350px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-t from-indigo-500/10 via-cyan-500/10 to-transparent blur-3xl" aria-hidden="true" />
 
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-5">
@@ -170,7 +170,7 @@ export function SiteFooter() {
         {/* Bottom copyright & micro info */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-slate-400 sm:flex-row">
           <p className="flex items-center gap-1.5 font-medium">
-            &copy; {new Date().getFullYear()} {siteName}. Built with <Heart className="h-3.5 w-3.5 text-red-500 fill-red-500 inline animate-pulse" /> by Engineering Team.
+            &copy; {new Date().getFullYear()} {siteName}. Built with <Heart className="h-3.5 w-3.5 text-red-500 fill-red-500 inline animate-pulse" aria-hidden="true" /> by Engineering Team.
           </p>
           <div className="flex gap-6 font-medium">
             <Link href="/privacy" className="transition-colors hover:text-cyan-400">

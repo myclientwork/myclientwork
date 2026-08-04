@@ -3,6 +3,7 @@ const nextConfig = {
   swcMinify: true,
   compress: true,
   reactStrictMode: true,
+  poweredByHeader: false,
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns', 'recharts'],
   },
@@ -20,15 +21,35 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
       },
+      // Pexels images (seed/member/project avatars)
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+      },
+      // Unsplash images
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
     ],
+  },
+  async redirects() {
+    return [
+      {
+        source: '/homepage',
+        destination: '/',
+        permanent: true,
+      },
+    ];
   },
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: '/:path*',
         headers: [
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           {
             key: 'Permissions-Policy',
@@ -37,6 +58,15 @@ const nextConfig = {
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains',
+          },
+        ],
+      },
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
